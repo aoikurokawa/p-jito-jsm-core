@@ -22,12 +22,12 @@ const Coin = () => {
       <CoinStyled className="coin">
         {win ? (
           <AnimateCoin
-            class="heads animate-coin"
+            className="heads animate-coin"
             src="https://lenadesignorg.files.wordpress.com/2020/06/head.png?w=100"
           />
         ) : (
           <AnimateCoin
-            class="tails animate-coin"
+            className="tails animate-coin"
             src="https://lenadesignorg.files.wordpress.com/2020/06/tail.png?w=100"
           />
         )}
