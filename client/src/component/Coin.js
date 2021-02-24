@@ -33,7 +33,7 @@ const Coin = ({betHandler}) => {
         <div className="side-b"></div>
       </div>
       <input type="number" placeholder="Type the price" value={price} onChange={(e) => setPrice(e.target.value)} />
-      <ButtonStyled onClick={coinTossHandler}>Toss coin</ButtonStyled>
+      <ButtonStyled onClick={coinTossHandler}>Bet</ButtonStyled>
     </div>
   );
 };
