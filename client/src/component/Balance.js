@@ -1,10 +1,9 @@
 import React from 'react';
 
-const Balance = ({account}) => {
+const Balance = ({balance}) => {
     return (
         <div>
             <h1>Coin component</h1>
-            <p>account: {account}</p>
         </div>
     );
 }

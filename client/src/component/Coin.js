@@ -1,45 +1,44 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 
-const Coin = () => {
-  let heads = 0;
-  let tails = 0;
-  let win = true;
+const Coin = ({betHandler}) => {
+
+  const [price, setPrice] = useState(0);
+
+  let head = true;
 
   const coinTossHandler = () => {
-    let x = Math.floor(Math.random() * 2);
-    if (x === 0) {
-        win = true;
-        heads += 1;
-    } else {
-        win = false;
-        tails += 1;
-    }
+    // console.log(price);
+    betHandler(price);
+    let flipResult = Math.random();
+    let coinCLass = document.getElementById("coin");
+    coinCLass.classList.remove();
+    setTimeout(() => {
+      if(flipResult <= 0.5) {
+        head = true;
+        coinCLass.classList.add("heads");
+        console.log("head");
+      } else {
+        head = false;
+        coinCLass.classList.add("tails");
+        console.log("tails");
+      }
+    }, 100);
   };
 
   return (
     <div>
-      <CoinStyled className="coin">
-        {win ? (
-          <AnimateCoin
-            className="heads animate-coin"
-            src="https://lenadesignorg.files.wordpress.com/2020/06/head.png?w=100"
-          />
-        ) : (
-          <AnimateCoin
-            className="tails animate-coin"
-            src="https://lenadesignorg.files.wordpress.com/2020/06/tail.png?w=100"
-          />
-        )}
-      </CoinStyled>
+      <div id="coin" className={`${head ? "heads" : "tails"}`} onClick={coinTossHandler}>
+        <div className="side-a"></div>
+        <div className="side-b"></div>
+      </div>
+      <input type="number" placeholder="Type the price" value={price} onChange={(e) => setPrice(e.target.value)} />
       <ButtonStyled onClick={coinTossHandler}>Toss coin</ButtonStyled>
     </div>
   );
 };
 
-const CoinStyled = styled.div`
-  position: relative;
-`;
+
 
 const ButtonStyled = styled.div`
   background-color: #e9c46a;
@@ -56,22 +55,6 @@ const ButtonStyled = styled.div`
   }
 `;
 
-const AnimateCoin = styled.img`
-    animation: flip 2s 1;
-    @keyframes flip {
-        0% {
-          transform: scale3d(1,1,1) rotateX(0deg);
-          
-        }
-        50% {
-          transform: scale3d(1,1,1) rotateX(3600deg);
-          
-        }
-        100% {
-          transform: scale3d(1,1,1) rotateX(7200deg);
-          
-        }
-      }
-`
+
 
 export default Coin;
