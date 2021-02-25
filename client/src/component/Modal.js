@@ -1,17 +1,14 @@
 import React from "react";
 import { Modal } from "antd";
 
-const DisplayModal = ({isModalVisible, handleOk, handleCancel, title, hash}) => {
+const DisplayModal = ({isModalVisible, handleOk, title, hash}) => {
   return (
     <Modal
       title={title}
       visible={isModalVisible}
       onOk={handleOk}
-      onCancel={handleCancel}
     >
-      <p>Transaction Hash: {hash}</p>
-      <p></p>
-      <p>Some contents...</p>
+      <p style={{color: "black"}}>Transaction Hash: {hash}</p>
     </Modal>
   );
 };

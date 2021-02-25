@@ -79,10 +79,6 @@ function App() {
     setIsModalVisible(false);
   };
 
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
-
   return (
     <div className="App">
       <GlobalStyle />
@@ -91,7 +87,6 @@ function App() {
       <DisplayModal
         isModalVisible={isModalVisible}
         handleOk={handleOk}
-        handleCancel={handleCancel}
         title={title}
         hash={hash}
       />
