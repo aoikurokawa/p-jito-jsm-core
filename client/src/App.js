@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Web3 from "web3";
-import { useDispatch, useSelector } from "react-redux";
 
 import { ADDRESS, ABI } from "./config";
 import GlobalStyle from "./component/GlobalStyle";
@@ -52,8 +51,6 @@ function App() {
           setHash(hash);
         })
         .on("receipt", (receipt) => {
-          console.log(receipt);
-          console.log(receipt.transactionHash);
           contractInstance.methods
             .balance()
             .call()

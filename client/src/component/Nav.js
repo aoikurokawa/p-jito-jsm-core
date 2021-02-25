@@ -59,8 +59,4 @@ const NavSstyled = styled.nav`
     }
 `;
 
-const BelanceStyled = styled.div`
-
-`;
-
 export default Nav;
