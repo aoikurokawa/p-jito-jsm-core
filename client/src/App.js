@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Web3 from "web3";
+import { useDispatch, useSelector } from "react-redux";
 
 import { ADDRESS, ABI } from "./config";
 import GlobalStyle from "./component/GlobalStyle";
@@ -10,6 +11,7 @@ import DisplayModal from "./component/Modal";
 import "./styles/app.scss";
 
 function App() {
+  
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState();
   const [contractInstance, setContractInstance] = useState();
@@ -47,23 +49,20 @@ function App() {
         .bet()
         .send(config)
         .on("transactionHash", (hash) => {
-          console.log(hash);
-        })
-        .on("confirmation", (confirmationNr) => {
-          console.log(confirmationNr);
+          setHash(hash);
         })
         .on("receipt", (receipt) => {
           console.log(receipt);
-          console.log(receipt.transactionHash)
+          console.log(receipt.transactionHash);
           contractInstance.methods
             .balance()
             .call()
             .then((result) => {
               if (result > balance) {
-                setTitle("You Win")
-                showModal()
+                setTitle("You Win");
+                showModal();
               } else {
-                setTitle("You Lose")
+                setTitle("You Lose");
                 showModal();
               }
               setBalance(Web3.utils.fromWei(result, "ether"));
@@ -94,6 +93,7 @@ function App() {
         handleOk={handleOk}
         handleCancel={handleCancel}
         title={title}
+        hash={hash}
       />
     </div>
   );
