@@ -2762,6 +2762,26 @@
     "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {
+    "3": {
+      "events": {
+        "0x56cce341e194f93a617b3d7b3cda0c55d38e0a94d0aa7d6952e6b2cdcf9bf228": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "bool",
+              "name": "win",
+              "type": "bool"
+            }
+          ],
+          "name": "betWin",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x37F8Eb8526034d5e131FCc7A93DfBc973b90B557",
+      "transactionHash": "0x6c2d898d97e078492082a03f01cc0752d4e36286b13a8f09b04e4780d085b9cc"
+    },
     "5777": {
       "events": {
         "0x56cce341e194f93a617b3d7b3cda0c55d38e0a94d0aa7d6952e6b2cdcf9bf228": {
@@ -2784,7 +2804,7 @@
     }
   },
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-02-24T06:34:31.906Z",
+  "updatedAt": "2021-02-27T04:21:13.630Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}
