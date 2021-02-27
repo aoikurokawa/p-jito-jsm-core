@@ -6,8 +6,9 @@ const Nav = ({account, balance}) => {
         <NavSstyled>
             <h1>Dapps - Coin Flip</h1>
             <ul>
-                <li>Your Account: {account}</li>
-                <li>Your Balance: {balance} ETH</li>
+                {/* <li>Your Account: {account}</li> */}
+                <li>Contract Balance: {balance} ETH</li>
+                <li>Your balance in game: ETH</li>
             </ul>
         </NavSstyled>
     );

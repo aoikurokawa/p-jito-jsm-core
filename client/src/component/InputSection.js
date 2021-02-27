@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 
-const Coin = ({ betHandler }) => {
+const InputSection = ({ betHandler }) => {
   const [price, setPrice] = useState(0);
 
   let head = true;
@@ -27,51 +27,52 @@ const Coin = ({ betHandler }) => {
 
   return (
     <div>
-      <div id="coin" className={`${head ? "heads" : "tails"}`}>
-        <div className="side-a"></div>
-        <div className="side-b"></div>
-      </div>
-      <InputSection>
+      <InputSectionStyled>
         <input
           type="number"
           placeholder="Type the price"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
         />
+        <label>ETH</label>
         <ButtonStyled onClick={coinTossHandler}>Bet</ButtonStyled>
-      </InputSection>
+      </InputSectionStyled>
     </div>
   );
 };
 
-const InputSection = styled.div`
-  text-align: center;
+const InputSectionStyled = styled.div`
   padding: 1rem;
   input {
-    padding: 2rem 3rem;
+    padding: 1rem 0rem;
     font-size: 2rem;
-    width: 100%;
-    border-radius: 2rem;
+    border-radius: 1rem;
+    text-align: center;
   }
   input:focus {
     outline: none;
   }
+  label {
+    color: white;
+    font-size: 2rem;
+    margin-left: 1rem;
+  }
 `;
 
 const ButtonStyled = styled.div`
-  background-color: #e9c46a;
-  color: #fff;
+  color: white;
+  border: 3px solid #23d997;
   padding: 3rem;
-  border-radius: 20rem;
+  border-radius: 3rem;
   transition: 0.5s;
   cursor: pointer;
   margin-top: 5rem;
   font-size: 2rem;
-
+  text-align: center;
   :hover {
-    opacity: 0.5;
-    background-color: #ef233c;
-  }
+    background-color: #23d997;
+    color: white;
+}
 `;
 
-export default Coin;
+export default InputSection;

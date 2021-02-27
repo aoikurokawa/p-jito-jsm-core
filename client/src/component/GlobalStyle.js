@@ -31,6 +31,10 @@ const GlobalStyle = createGlobalStyle`
             color: white;
         }
     }
+    h1 {
+        color: white;
+        text-align: center;
+    }
     h2 {
         font-weight: lighter;
         font-size: 4rem;

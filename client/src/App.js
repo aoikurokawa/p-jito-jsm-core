@@ -4,19 +4,21 @@ import Web3 from "web3";
 import { ADDRESS, ABI } from "./config";
 import GlobalStyle from "./component/GlobalStyle";
 import Nav from "./component/Nav";
-import Coin from "./component/Coin";
 import DisplayModal from "./component/Modal";
+import DepositSection from "./section/DepositSection";
+import BetSection from './section/BetSection';
+import WithdrawSection from './section/WithdrawSection';
 
 import "./styles/app.scss";
 
 function App() {
-  
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState();
   const [contractInstance, setContractInstance] = useState();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [title, setTitle] = useState("");
   const [hash, setHash] = useState("");
+  const [deposit, setDeposit] = useState(0);
 
   useEffect(() => {
     loadBlockchain();
@@ -26,13 +28,22 @@ function App() {
     const web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
     const accounts = await web3.eth.getAccounts();
     setAccount(accounts);
-    const contractInstance = new web3.eth.Contract(ABI, ADDRESS);
+    const contractInstance = new web3.eth.Contract(ABI, ADDRESS, {
+      from: accounts[0],
+    });
+    console.log(contractInstance);
     setContractInstance(contractInstance);
     contractInstance.methods
       .balance()
       .call()
       .then((result) => {
         setBalance(Web3.utils.fromWei(result, "ether"));
+      });
+    contractInstance.methods
+      .getPlayerBalance(window.ethereum.selectedAddress)
+      .call()
+      .then((res) => {
+        console.log(res);
       });
   };
 
@@ -80,7 +91,9 @@ function App() {
     <div className="App">
       <GlobalStyle />
       <Nav account={account} balance={balance} />
-      <Coin betHandler={betHandler} />
+      <DepositSection deposit={deposit} />
+      <BetSection />
+      <WithdrawSection />
       <DisplayModal
         isModalVisible={isModalVisible}
         handleOk={handleOk}
