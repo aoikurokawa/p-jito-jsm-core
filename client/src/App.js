@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Web3 from "web3";
 import { Loader } from "rimble-ui";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 
-import { ADDRESS, ABI } from "./config";
 import GlobalStyle from "./component/GlobalStyle";
 import Nav from "./component/Nav";
 import DisplayModal from "./component/Modal";
@@ -12,55 +11,25 @@ import DepositSection from "./section/DepositSection";
 import BetSection from "./section/BetSection";
 import WithdrawSection from "./section/WithdrawSection";
 import { showModal } from "./actions/modalAction";
+import { loadBlockchain } from "./actions/blockchainAction";
 
 function App() {
   //dispatch
   const dispatch = useDispatch();
   //data
-  const { isModalVisible, functionType, modalTitle, modalHash } = useSelector(
-    (state) => state.modal
-  );
-
-  const [account, setAccount] = useState("");
-  const [contractBalance, setContractBalance] = useState();
-  const [gameBalance, setGameBalance] = useState();
-  const [minimumAmount, setMinimumAmount] = useState();
-  const [contractInstance, setContractInstance] = useState();
-  const [isLoading, setIsLoading] = useState(true);
+  const { isModalVisible, functionType } = useSelector((state) => state.modal);
+  const {
+    contractInstance,
+    account,
+    contractBalance,
+    gameBalance,
+    minimumAmount,
+    isLoading,
+  } = useSelector((state) => state.blockchain);
 
   useEffect(() => {
-    loadBlockchain();
-  }, []);
-
-  const loadBlockchain = async () => {
-    const web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
-    const accounts = await web3.eth.getAccounts();
-    setAccount(accounts);
-    const contractInstance = new web3.eth.Contract(ABI, ADDRESS, {
-      from: accounts[0],
-    });
-    console.log(contractInstance);
-    setContractInstance(contractInstance);
-    contractInstance.methods
-      .balance()
-      .call()
-      .then((result) => {
-        setContractBalance(Web3.utils.fromWei(result, "ether"));
-      });
-    contractInstance.methods
-      .getPlayerBalance(window.ethereum.selectedAddress)
-      .call()
-      .then((res) => {
-        setGameBalance(Web3.utils.fromWei(res, "ether"));
-      });
-    contractInstance.methods
-      .minimumBetNumber()
-      .call()
-      .then((res) => {
-        setMinimumAmount(Web3.utils.fromWei(res, "ether"));
-        setIsLoading(false);
-      });
-  };
+    dispatch(loadBlockchain());
+  }, [dispatch]);
 
   const depositHandler = (depositAmount) => {
     if (depositAmount === 0) {
@@ -74,7 +43,9 @@ function App() {
         .deposit()
         .send(config)
         .on("transactionHash", (hash) => {
-          dispatch(showModal("deposit", `You deposit ${depositAmount} ETH`, hash));
+          dispatch(
+            showModal("deposit", `You deposit ${depositAmount} ETH`, hash)
+          );
         });
     }
   };
@@ -101,7 +72,6 @@ function App() {
   };
 
   const withdrawHandler = () => {
-    console.log("withdraw");
     contractInstance.methods
       .withdrawFunds()
       .send()
@@ -129,9 +99,6 @@ function App() {
 
     dispatch({
       type: "CLOSE_MODAL",
-      functionType: "",
-      modalTitle: "",
-      modalHash: "",
     });
   };
 

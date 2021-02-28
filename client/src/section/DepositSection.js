@@ -5,8 +5,8 @@ const DepositSection = ({ depositHandler }) => {
   const [depositAmount, setDepositAmount] = useState(0);
 
   const depositClickHandler = () => {
-    console.log(depositAmount);
     depositHandler(depositAmount);
+    setDepositAmount(0);
   }
 
   return (
