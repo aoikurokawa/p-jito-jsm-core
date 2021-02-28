@@ -35,10 +35,9 @@ const Nav = ({ account, contractBalance, gameBalance }) => {
 const NavSstyled = styled.nav`
   min-height: 10vh;
   margin: auto;
-  // display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 10rem;
+  padding: 1rem 10rem 0rem 10rem;
   background: #282828;
   position: sticky;
   top: 0;
@@ -53,9 +52,11 @@ const NavSstyled = styled.nav`
   ul {
     display: flex;
     list-style: none;
+    padding: 2rem;
+    justify-content: space-around;
   }
   li {
-    padding-left: 7rem;
+    // padding-left: 7rem;
     position: relative;
     color: white;
     text-decoration: none;
