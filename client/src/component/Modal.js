@@ -7,6 +7,7 @@ const DisplayModal = ({isModalVisible, handleOk, title, hash}) => {
       title={title}
       visible={isModalVisible}
       onOk={handleOk}
+      cancelButtonProps={{ disabled: true }}
     >
       <p style={{color: "black"}}>Transaction Hash: {hash}</p>
     </Modal>

@@ -12,6 +12,7 @@ const WithdrawSection = () => {
 
 const WithdrawStyled = styled.div`
     text-align: center;
+    margin-top: 8rem;
 `
 
 export default WithdrawSection;

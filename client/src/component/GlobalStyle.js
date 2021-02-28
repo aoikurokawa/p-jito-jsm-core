@@ -31,16 +31,14 @@ const GlobalStyle = createGlobalStyle`
             color: white;
         }
     }
-    h1 {
-        color: white;
-        text-align: center;
-    }
     h2 {
         font-weight: lighter;
-        font-size: 4rem;
+        font-size: 8rem;
     }
     h3 {
         color: white;
+        text-align: center;
+        margin-top: 7rem;
     }
     h4 {
         font-weight: bold;

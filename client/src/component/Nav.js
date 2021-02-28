@@ -1,14 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const Nav = ({account, balance}) => {
+const Nav = ({account, contractBalance, gameBalance}) => {
     return(
         <NavSstyled>
             <h1>Dapps - Coin Flip</h1>
             <ul>
                 {/* <li>Your Account: {account}</li> */}
-                <li>Contract Balance: {balance} ETH</li>
-                <li>Your balance in game: ETH</li>
+                <li>Contract Balance: {contractBalance} ETH</li>
+                <li>Your balance in game: {gameBalance} ETH</li>
             </ul>
         </NavSstyled>
     );

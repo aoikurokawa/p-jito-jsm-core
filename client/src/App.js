@@ -6,19 +6,20 @@ import GlobalStyle from "./component/GlobalStyle";
 import Nav from "./component/Nav";
 import DisplayModal from "./component/Modal";
 import DepositSection from "./section/DepositSection";
-import BetSection from './section/BetSection';
-import WithdrawSection from './section/WithdrawSection';
+import BetSection from "./section/BetSection";
+import WithdrawSection from "./section/WithdrawSection";
 
 import "./styles/app.scss";
 
 function App() {
   const [account, setAccount] = useState("");
-  const [balance, setBalance] = useState();
+  const [contractBalance, setContractBalance] = useState();
+  const [gameBalance, setGameBalance] = useState();
+  const [minimumAmount, setMinimumAmount] = useState();
   const [contractInstance, setContractInstance] = useState();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [title, setTitle] = useState("");
   const [hash, setHash] = useState("");
-  const [deposit, setDeposit] = useState(0);
 
   useEffect(() => {
     loadBlockchain();
@@ -37,47 +38,73 @@ function App() {
       .balance()
       .call()
       .then((result) => {
-        setBalance(Web3.utils.fromWei(result, "ether"));
+        setContractBalance(Web3.utils.fromWei(result, "ether"));
       });
     contractInstance.methods
       .getPlayerBalance(window.ethereum.selectedAddress)
       .call()
       .then((res) => {
-        console.log(res);
+        setGameBalance(res);
+      });
+    contractInstance.methods
+      .minimumBetNumber()
+      .call()
+      .then((res) => {
+        setMinimumAmount(Web3.utils.fromWei(res, "ether"));
       });
   };
 
-  const betHandler = async (price) => {
-    if (price === 0) {
-      alert("should be more than zero!!");
+  const depositHandler = (depositAmount) => {
+    if (depositAmount == 0) {
+      alert("should be more than zero!");
     } else {
       let config = {
-        value: Web3.utils.toWei(price, "ether"),
+        value: Web3.utils.toWei(depositAmount, "ether"),
         from: account[0],
       };
       contractInstance.methods
-        .bet()
+        .deposit()
         .send(config)
         .on("transactionHash", (hash) => {
+          showModal();
           setHash(hash);
-        })
-        .on("receipt", (receipt) => {
-          contractInstance.methods
-            .balance()
-            .call()
-            .then((result) => {
-              if (result > balance) {
-                setTitle("You Win");
-                showModal();
-              } else {
-                setTitle("You Lose");
-                showModal();
-              }
-              setBalance(Web3.utils.fromWei(result, "ether"));
-            });
+          console.log(config.value);
+          setTitle(`You deposit ${depositAmount} ETH`);
         });
     }
   };
+
+  // const betHandler = async (price) => {
+  //   if (price === 0) {
+  //     alert("should be more than zero!!");
+  //   } else {
+  //     let config = {
+  //       value: Web3.utils.toWei(price, "ether"),
+  //       from: account[0],
+  //     };
+  //     contractInstance.methods
+  //       .bet()
+  //       .send(config)
+  //       .on("transactionHash", (hash) => {
+  //         setHash(hash);
+  //       })
+  //       .on("receipt", (receipt) => {
+  //         contractInstance.methods
+  //           .balance()
+  //           .call()
+  //           .then((result) => {
+  //             if (result > balance) {
+  //               setTitle("You Win");
+  //               showModal();
+  //             } else {
+  //               setTitle("You Lose");
+  //               showModal();
+  //             }
+  //             setBalance(Web3.utils.fromWei(result, "ether"));
+  //           });
+  //       });
+  //   }
+  // };
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -85,14 +112,20 @@ function App() {
 
   const handleOk = () => {
     setIsModalVisible(false);
+    setTitle("");
+    setHash("");
   };
 
   return (
     <div className="App">
       <GlobalStyle />
-      <Nav account={account} balance={balance} />
-      <DepositSection deposit={deposit} />
-      <BetSection />
+      <Nav
+        account={account}
+        contractBalance={contractBalance}
+        gameBalance={gameBalance}
+      />
+      <DepositSection depositHandler={depositHandler} />
+      <BetSection minimumAmount={minimumAmount} />
       <WithdrawSection />
       <DisplayModal
         isModalVisible={isModalVisible}

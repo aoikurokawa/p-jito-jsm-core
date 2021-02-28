@@ -3,10 +3,10 @@ import SelectSelection from "../component/SelectSelection";
 import InputSection from "../component/InputSection";
 import styled from "styled-components";
 
-const BetSection = () => {
+const BetSection = ({ minimumAmount }) => {
   return (
     <>
-      <h1>Minimum amount: {}</h1>
+      <h3>Minimum amount: {minimumAmount} ETH</h3>
       <BetSectionStyled>
         <SelectSelection />
         <InputSection />

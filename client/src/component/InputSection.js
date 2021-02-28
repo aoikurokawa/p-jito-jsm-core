@@ -28,13 +28,15 @@ const InputSection = ({ betHandler }) => {
   return (
     <div>
       <InputSectionStyled>
-        <input
-          type="number"
-          placeholder="Type the price"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-        />
-        <label>ETH</label>
+        <div>
+          <input
+            type="number"
+            placeholder="Type the price"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+          />
+          <label>ETH</label>
+        </div>
         <ButtonStyled onClick={coinTossHandler}>Bet</ButtonStyled>
       </InputSectionStyled>
     </div>
@@ -43,6 +45,7 @@ const InputSection = ({ betHandler }) => {
 
 const InputSectionStyled = styled.div`
   padding: 1rem;
+  text-align: center;
   input {
     padding: 1rem 0rem;
     font-size: 2rem;
@@ -59,20 +62,20 @@ const InputSectionStyled = styled.div`
   }
 `;
 
-const ButtonStyled = styled.div`
+const ButtonStyled = styled.button`
   color: white;
   border: 3px solid #23d997;
-  padding: 3rem;
-  border-radius: 3rem;
+  border-radius: 1rem;
   transition: 0.5s;
   cursor: pointer;
-  margin-top: 5rem;
-  font-size: 2rem;
+  margin-top: 3rem;
+  font-size: 1.1rem;
   text-align: center;
+  padding: 1rem 6rem;
   :hover {
     background-color: #23d997;
     color: white;
-}
+  }
 `;
 
 export default InputSection;
