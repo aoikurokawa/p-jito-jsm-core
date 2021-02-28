@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Web3 from "web3";
 import { Loader } from "rimble-ui";
+import { useDispatch, useSelector } from "react-redux";
+import styled from "styled-components";
 
 import { ADDRESS, ABI } from "./config";
 import GlobalStyle from "./component/GlobalStyle";
@@ -9,18 +11,21 @@ import DisplayModal from "./component/Modal";
 import DepositSection from "./section/DepositSection";
 import BetSection from "./section/BetSection";
 import WithdrawSection from "./section/WithdrawSection";
-import styled from "styled-components";
+import { showModal } from "./actions/modalAction";
 
 function App() {
+  //dispatch
+  const dispatch = useDispatch();
+  //data
+  const { isModalVisible, functionType, modalTitle, modalHash } = useSelector(
+    (state) => state.modal
+  );
+
   const [account, setAccount] = useState("");
   const [contractBalance, setContractBalance] = useState();
   const [gameBalance, setGameBalance] = useState();
   const [minimumAmount, setMinimumAmount] = useState();
   const [contractInstance, setContractInstance] = useState();
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [title, setTitle] = useState("");
-  const [type, setType] = useState("");
-  const [hash, setHash] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -69,9 +74,7 @@ function App() {
         .deposit()
         .send(config)
         .on("transactionHash", (hash) => {
-          showModal("deposit");
-          setHash(hash);
-          setTitle(`You deposit ${depositAmount} ETH`);
+          dispatch(showModal("deposit", `You deposit ${depositAmount} ETH`, hash));
         });
     }
   };
@@ -93,7 +96,7 @@ function App() {
         .on("receipt", (receipt) => {
           console.log(receipt);
           alert("You betted!");
-        })
+        });
     }
   };
 
@@ -119,27 +122,17 @@ function App() {
       });
   };
 
-  const showModal = (type) => {
-    setIsModalVisible(true);
-    setType(type);
-  };
-
   const handleOk = () => {
-    if (type === "withdraw") {
+    if (functionType === "withdraw") {
       withdrawHandler();
     }
 
-    setIsModalVisible(false);
-    setTitle("");
-    setHash("");
-    setType("");
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    setTitle("");
-    setHash("");
-    setType("");
+    dispatch({
+      type: "CLOSE_MODAL",
+      functionType: "",
+      modalTitle: "",
+      modalHash: "",
+    });
   };
 
   return (
@@ -158,18 +151,8 @@ function App() {
           />
           <DepositSection depositHandler={depositHandler} />
           <BetSection minimumAmount={minimumAmount} betHandler={betHandler} />
-          <WithdrawSection
-            showModal={showModal}
-            setTitle={setTitle}
-            setType={setType}
-          />
-          <DisplayModal
-            isModalVisible={isModalVisible}
-            handleOk={handleOk}
-            handleCancel={handleCancel}
-            title={title}
-            hash={hash}
-          />
+          <WithdrawSection handleOk={handleOk} />
+          <DisplayModal isModalVisible={isModalVisible} handleOk={handleOk} />
         </>
       )}
     </div>

@@ -49,7 +49,7 @@ const ButtonStyled = styled.button`
   margin-top: 3rem;
   font-size: 1.1rem;
   text-align: center;
-  padding: 1rem 6rem;
+  padding: 1rem 15rem;
   :hover {
     background-color: #23d997;
     color: white;
