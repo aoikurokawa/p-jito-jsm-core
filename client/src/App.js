@@ -44,7 +44,7 @@ function App() {
       .getPlayerBalance(window.ethereum.selectedAddress)
       .call()
       .then((res) => {
-        setGameBalance(res);
+        setGameBalance(Web3.utils.fromWei(res, "ether"));
       });
     contractInstance.methods
       .minimumBetNumber()
@@ -55,7 +55,7 @@ function App() {
   };
 
   const depositHandler = (depositAmount) => {
-    if (depositAmount == 0) {
+    if (depositAmount === 0) {
       alert("should be more than zero!");
     } else {
       let config = {
@@ -68,43 +68,28 @@ function App() {
         .on("transactionHash", (hash) => {
           showModal();
           setHash(hash);
-          console.log(config.value);
           setTitle(`You deposit ${depositAmount} ETH`);
         });
     }
   };
 
-  // const betHandler = async (price) => {
-  //   if (price === 0) {
-  //     alert("should be more than zero!!");
-  //   } else {
-  //     let config = {
-  //       value: Web3.utils.toWei(price, "ether"),
-  //       from: account[0],
-  //     };
-  //     contractInstance.methods
-  //       .bet()
-  //       .send(config)
-  //       .on("transactionHash", (hash) => {
-  //         setHash(hash);
-  //       })
-  //       .on("receipt", (receipt) => {
-  //         contractInstance.methods
-  //           .balance()
-  //           .call()
-  //           .then((result) => {
-  //             if (result > balance) {
-  //               setTitle("You Win");
-  //               showModal();
-  //             } else {
-  //               setTitle("You Lose");
-  //               showModal();
-  //             }
-  //             setBalance(Web3.utils.fromWei(result, "ether"));
-  //           });
-  //       });
-  //   }
-  // };
+  const betHandler = (choice, price) => {
+    if(price <= 0) {
+      alert("should be more than zero!");
+    } else {
+      let config = {
+        value: Web3.utils.toWei(price, "ether"),
+        from: account[0],
+      };
+      contractInstance.methods
+      .bet(choice)
+      .send(config)
+      .on("transactionHash", (hash) => {
+        console.log(hash);                  
+      });
+    }
+    
+  };
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -125,7 +110,7 @@ function App() {
         gameBalance={gameBalance}
       />
       <DepositSection depositHandler={depositHandler} />
-      <BetSection minimumAmount={minimumAmount} />
+      <BetSection minimumAmount={minimumAmount} betHandler={betHandler} />
       <WithdrawSection />
       <DisplayModal
         isModalVisible={isModalVisible}

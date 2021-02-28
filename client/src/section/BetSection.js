@@ -1,15 +1,28 @@
-import React from "react";
+import React, { useState } from "react";
 import SelectSelection from "../component/SelectSelection";
 import InputSection from "../component/InputSection";
 import styled from "styled-components";
 
-const BetSection = ({ minimumAmount }) => {
+const BetSection = ({ minimumAmount, betHandler }) => {
+  const [choice, setChoice] = useState();
+  const [price, setPrice] = useState(0);
+
+  const betClickHandler = () => {
+    console.log(choice);
+    console.log(price);
+    betHandler(choice, price);
+  };
+
   return (
     <>
       <h3>Minimum amount: {minimumAmount} ETH</h3>
       <BetSectionStyled>
-        <SelectSelection />
-        <InputSection />
+        <SelectSelection setChoice={setChoice} />
+        <InputSection
+          betClickHandler={betClickHandler}
+          setPrice={setPrice}
+          price={price}
+        />
       </BetSectionStyled>
     </>
   );

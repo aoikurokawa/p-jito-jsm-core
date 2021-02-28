@@ -3,11 +3,15 @@ import React from "react";
 import { Select } from "antd";
 import styled from "styled-components";
 
-const SelectSelection = () => {
+const SelectSelection = ({setChoice}) => {
   const { Option } = Select;
 
-  function onChange(value) {
-    console.log(`selected ${value}`);
+  const selectHandler = (value) => {
+    let choice = 0
+    if(value === "heads") {
+      choice = 1;
+    }
+    setChoice(choice);
   }
 
   return (
@@ -17,7 +21,7 @@ const SelectSelection = () => {
         style={{ width: 300, color: "black"}}
         placeholder="Bet hands or tails"
         optionFilterProp="children"
-        onChange={onChange}
+        onChange={(value) => selectHandler(value)}
         filterOption={(input, option) =>
           option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
         }

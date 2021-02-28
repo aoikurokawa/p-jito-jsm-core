@@ -1,29 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 
-const InputSection = ({ betHandler }) => {
-  const [price, setPrice] = useState(0);
-
-  let head = true;
-
-  const coinTossHandler = () => {
-    // console.log(price);
-    betHandler(price);
-    let flipResult = Math.random();
-    let coinCLass = document.getElementById("coin");
-    coinCLass.classList.remove();
-    setTimeout(() => {
-      if (flipResult <= 0.5) {
-        head = true;
-        coinCLass.classList.add("heads");
-        console.log("head");
-      } else {
-        head = false;
-        coinCLass.classList.add("tails");
-        console.log("tails");
-      }
-    }, 100);
-  };
+const InputSection = ({ betClickHandler, price, setPrice }) => {
 
   return (
     <div>
@@ -37,7 +15,7 @@ const InputSection = ({ betHandler }) => {
           />
           <label>ETH</label>
         </div>
-        <ButtonStyled onClick={coinTossHandler}>Bet</ButtonStyled>
+        <ButtonStyled onClick={betClickHandler}>Bet</ButtonStyled>
       </InputSectionStyled>
     </div>
   );
