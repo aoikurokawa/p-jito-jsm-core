@@ -26,7 +26,7 @@ const InputSectionStyled = styled.div`
   text-align: center;
   input {
     padding: 1rem 0rem;
-    font-size: 2rem;
+    font-size: 1.5rem;
     border-radius: 1rem;
     text-align: center;
   }

@@ -7,6 +7,7 @@ import "./api/provableAPI_0.5.sol";
 contract CoinFlip is usingProvable {
     uint256 public balance;
     uint256 public minimumBetNumber;
+    bool public result;
 
     uint256 constant NUM_RANDOM_BYTES_REQUESTED = 1;
     uint256 public latetstNumber;
@@ -107,7 +108,7 @@ contract CoinFlip is usingProvable {
 
         uint256 randomNumber = uint256(keccak256(abi.encodePacked(_result))) % 2;
 
-        closedBet(_myid, randomNumber);
+        result = closedBet(_myid, randomNumber);
 
         emit generateRandomNumber(randomNumber);
     }

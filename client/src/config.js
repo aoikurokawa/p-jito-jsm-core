@@ -1,4 +1,4 @@
-export const ADDRESS = "0xb215658EEBA2dd6dEcf0a05E7E427CDd31161912";
+export const ADDRESS = "0x4F998346dbDDe78C4F75D59a9f724326a8FA7a69";
 
 export const ABI = [
   {
@@ -216,6 +216,21 @@ export const ABI = [
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "result",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "payable": false,

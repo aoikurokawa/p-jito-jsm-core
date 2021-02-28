@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Web3 from "web3";
+import { Loader } from "rimble-ui";
 
 import { ADDRESS, ABI } from "./config";
 import GlobalStyle from "./component/GlobalStyle";
@@ -8,8 +9,7 @@ import DisplayModal from "./component/Modal";
 import DepositSection from "./section/DepositSection";
 import BetSection from "./section/BetSection";
 import WithdrawSection from "./section/WithdrawSection";
-
-import "./styles/app.scss";
+import styled from "styled-components";
 
 function App() {
   const [account, setAccount] = useState("");
@@ -19,7 +19,9 @@ function App() {
   const [contractInstance, setContractInstance] = useState();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [title, setTitle] = useState("");
+  const [type, setType] = useState("");
   const [hash, setHash] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadBlockchain();
@@ -51,6 +53,7 @@ function App() {
       .call()
       .then((res) => {
         setMinimumAmount(Web3.utils.fromWei(res, "ether"));
+        setIsLoading(false);
       });
   };
 
@@ -66,7 +69,7 @@ function App() {
         .deposit()
         .send(config)
         .on("transactionHash", (hash) => {
-          showModal();
+          showModal("deposit");
           setHash(hash);
           setTitle(`You deposit ${depositAmount} ETH`);
         });
@@ -74,7 +77,8 @@ function App() {
   };
 
   const betHandler = (choice, price) => {
-    if(price <= 0) {
+    console.log(choice);
+    if (price <= 0) {
       alert("should be more than zero!");
     } else {
       let config = {
@@ -82,44 +86,86 @@ function App() {
         from: account[0],
       };
       contractInstance.methods
-      .bet(choice)
-      .send(config)
-      .on("transactionHash", (hash) => {
-        console.log(hash);                  
-      });
+        .bet(choice)
+        .send(config)
+        .on("transactionHash", (hash) => {
+          console.log(hash);
+        });
     }
-    
   };
 
-  const showModal = () => {
+  const withdrawHandler = () => {
+    console.log("withdraw");
+    contractInstance.methods
+      .withdrawFunds()
+      .call()
+      .then((result) => {
+        console.log(result);
+      });
+  };
+
+  const showModal = (type) => {
     setIsModalVisible(true);
+    setType(type);
   };
 
   const handleOk = () => {
+    if (type === "withdraw") {
+      withdrawHandler();
+    }
+
     setIsModalVisible(false);
     setTitle("");
     setHash("");
+    setType("");
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    setTitle("");
+    setHash("");
+    setType("");
   };
 
   return (
     <div className="App">
       <GlobalStyle />
-      <Nav
-        account={account}
-        contractBalance={contractBalance}
-        gameBalance={gameBalance}
-      />
-      <DepositSection depositHandler={depositHandler} />
-      <BetSection minimumAmount={minimumAmount} betHandler={betHandler} />
-      <WithdrawSection />
-      <DisplayModal
-        isModalVisible={isModalVisible}
-        handleOk={handleOk}
-        title={title}
-        hash={hash}
-      />
+      {isLoading ? (
+        <LoadingStyled>
+          <Loader color="primary" size="80px" />
+        </LoadingStyled>
+      ) : (
+        <>
+          <Nav
+            account={account}
+            contractBalance={contractBalance}
+            gameBalance={gameBalance}
+          />
+          <DepositSection depositHandler={depositHandler} />
+          <BetSection minimumAmount={minimumAmount} betHandler={betHandler} />
+          <WithdrawSection
+            showModal={showModal}
+            setTitle={setTitle}
+            setType={setType}
+          />
+          <DisplayModal
+            isModalVisible={isModalVisible}
+            handleOk={handleOk}
+            handleCancel={handleCancel}
+            title={title}
+            hash={hash}
+          />
+        </>
+      )}
     </div>
   );
 }
+
+const LoadingStyled = styled.div`
+  display: flex;
+  justify-content: space-around;
+  height: 100vh;
+  align-items: center;
+`;
 
 export default App;
