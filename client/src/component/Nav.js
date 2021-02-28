@@ -3,14 +3,26 @@ import styled from "styled-components";
 import { EthAddress, MetaMaskButton } from "rimble-ui";
 
 const Nav = ({ account, contractBalance, gameBalance }) => {
+  const memaskHandler = async () => {
+    try {
+      // Will open the MetaMask UI
+      // You should disable this button while the request is pending!
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <NavSstyled>
       <h1>Dapps - Coin Flip</h1>
       <EthStyled>
         <div className="address">
-          <EthAddress address={account} textLabels />
+          <EthAddress address={account[0]} textLabels />
         </div>
-        <MetaMaskButton>Connect with MetaMask</MetaMaskButton>
+        <MetaMaskButton onClick={memaskHandler}>
+          Connect with MetaMask
+        </MetaMaskButton>
       </EthStyled>
       <ul>
         <li>Contract Balance: {contractBalance} ETH</li>
@@ -69,8 +81,8 @@ const NavSstyled = styled.nav`
 const EthStyled = styled.div`
   display: flex;
   .address {
-      width: 70%;
-      margin-right: 4rem;
+    width: 70%;
+    margin-right: 4rem;
   }
 `;
 
