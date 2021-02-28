@@ -48,6 +48,7 @@ const NavSstyled = styled.nav`
     font-size: 1.5rem;
     font-family: "Lobster", cursive;
     font-weight: lighter;
+    margin-bottom: 2rem;
   }
   ul {
     display: flex;

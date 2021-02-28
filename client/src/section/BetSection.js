@@ -8,9 +8,9 @@ const BetSection = ({ minimumAmount, betHandler }) => {
   const [price, setPrice] = useState(0);
 
   const betClickHandler = () => {
-    console.log(choice);
-    console.log(price);
     betHandler(choice, price);
+    setChoice("");
+    setPrice(0);
   };
 
   return (

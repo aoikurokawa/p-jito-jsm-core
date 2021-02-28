@@ -77,7 +77,6 @@ function App() {
   };
 
   const betHandler = (choice, price) => {
-    console.log(choice);
     if (price <= 0) {
       alert("should be more than zero!");
     } else {
@@ -90,7 +89,11 @@ function App() {
         .send(config)
         .on("transactionHash", (hash) => {
           console.log(hash);
-        });
+        })
+        .on("receipt", (receipt) => {
+          console.log(receipt);
+          alert("You betted!");
+        })
     }
   };
 
@@ -98,9 +101,21 @@ function App() {
     console.log("withdraw");
     contractInstance.methods
       .withdrawFunds()
-      .call()
-      .then((result) => {
-        console.log(result);
+      .send()
+      .on("transactionHash", (hash) => {
+        console.log(hash);
+      })
+      .on("receipt", (receipt) => {
+        console.log(receipt);
+        let amt = receipt.events.WithdrawnFundsFromPlayer.returnValues(
+          "amount"
+        );
+        alert(
+          `You received ${Web3.utils.fromWei(
+            amt,
+            "ether"
+          )} eth! Check your Metamask wallet`
+        );
       });
   };
 
