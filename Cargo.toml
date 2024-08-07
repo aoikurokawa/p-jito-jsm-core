@@ -1,0 +1,11 @@
+[package]
+name = "jito-jsm-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.7.5"
+dotenv = "0.15.0"
+solana-client = "2.0.4"
+solana-program = "2.0.4"
+tokio = { version = "1.39.2", features = ["full"] }
