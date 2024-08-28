@@ -2,7 +2,7 @@
 
 ## Getting started
 
-### Copy .env
+### Copy .env file
 
 ```bash
 cp .env.sample .env
