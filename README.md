@@ -10,3 +10,6 @@ cp .env.sample .env
 
 ## Run
 
+## Resources
+-
+- Hello world !!
