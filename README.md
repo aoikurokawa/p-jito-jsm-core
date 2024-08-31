@@ -1,4 +1,4 @@
-# Jito JSM API
+# Quick
 
 ## Getting started
 
