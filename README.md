@@ -1,4 +1,4 @@
-# Jito JSM API
+# Quick
 
 ## Getting started
 
@@ -36,5 +36,5 @@ cargo nextest run --all-features
 
 
 ## Resources
--
+- [Kinobi](https://github.com/kinobi-so/kinobi)
 - Hello world !!
