@@ -1,5 +1,11 @@
-use jito_restaking_client::instructions::{InitializeNcnBuilder, InitializeOperatorBuilder};
-use jito_restaking_core::{ncn::Ncn, operator::Operator};
+use jito_restaking_client::instructions::{
+    InitializeNcnBuilder, InitializeNcnOperatorStateBuilder, InitializeNcnVaultTicketBuilder,
+    InitializeOperatorBuilder,
+};
+use jito_restaking_core::{
+    ncn::Ncn, ncn_operator_state::NcnOperatorState, ncn_vault_ticket::NcnVaultTicket,
+    operator::Operator,
+};
 use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_sdk::{
     commitment_config::CommitmentConfig, pubkey, pubkey::Pubkey, signature::Keypair,
@@ -67,8 +73,7 @@ impl<'a> RestakingHandler<'a> {
             )
             .ncn(ncn)
             .admin(self.payer.pubkey())
-            .base(base.pubkey())
-            .instruction();
+            .base(base.pubkey());
         let mut ix = ix_builder.instruction();
         ix.program_id = self.restaking_program_id;
 
@@ -101,14 +106,85 @@ impl<'a> RestakingHandler<'a> {
             )
             .operator(operator)
             .admin(self.payer.pubkey())
-            .base(base.pubkey())
-            .instruction();
+            .base(base.pubkey());
+        let mut ix = ix_builder.instruction();
+        ix.program_id = self.restaking_program_id;
 
         let blockhash = rpc_client.get_latest_blockhash().await.expect("");
         let tx = Transaction::new_signed_with_payer(
-            &[ix_builder.instruction()],
+            &[ix],
             Some(&self.payer.pubkey()),
             &[self.payer, &base],
+            blockhash,
+        );
+        rpc_client
+            .send_and_confirm_transaction(&tx)
+            .await
+            .expect("");
+    }
+
+    pub async fn initialize_ncn_vault_ticket(&self, ncn: Pubkey, vault: Pubkey) {
+        let rpc_client = self.get_rpc_client();
+
+        let ncn_vault_ticket =
+            NcnVaultTicket::find_program_address(&self.restaking_program_id, &ncn, &vault).0;
+
+        let mut ix_builder = InitializeNcnVaultTicketBuilder::new();
+        ix_builder
+            .config(
+                jito_restaking_core::config::Config::find_program_address(
+                    &self.restaking_program_id,
+                )
+                .0,
+            )
+            .ncn(ncn)
+            .vault(vault)
+            .ncn_vault_ticket(ncn_vault_ticket)
+            .admin(self.payer.pubkey())
+            .payer(self.payer.pubkey());
+        let mut ix = ix_builder.instruction();
+        ix.program_id = self.restaking_program_id;
+
+        let blockhash = rpc_client.get_latest_blockhash().await.expect("");
+        let tx = Transaction::new_signed_with_payer(
+            &[ix],
+            Some(&self.payer.pubkey()),
+            &[self.payer, self.payer],
+            blockhash,
+        );
+        rpc_client
+            .send_and_confirm_transaction(&tx)
+            .await
+            .expect("");
+    }
+
+    pub async fn initialize_ncn_operator_state(&self, ncn: Pubkey, operator: Pubkey) {
+        let rpc_client = self.get_rpc_client();
+
+        let ncn_operator_state =
+            NcnOperatorState::find_program_address(&self.restaking_program_id, &ncn, &operator).0;
+
+        let mut ix_builder = InitializeNcnOperatorStateBuilder::new();
+        ix_builder
+            .config(
+                jito_restaking_core::config::Config::find_program_address(
+                    &self.restaking_program_id,
+                )
+                .0,
+            )
+            .ncn(ncn)
+            .operator(operator)
+            .ncn_operator_state(ncn_operator_state)
+            .admin(self.payer.pubkey())
+            .payer(self.payer.pubkey());
+        let mut ix = ix_builder.instruction();
+        ix.program_id = self.restaking_program_id;
+
+        let blockhash = rpc_client.get_latest_blockhash().await.expect("");
+        let tx = Transaction::new_signed_with_payer(
+            &[ix],
+            Some(&self.payer.pubkey()),
+            &[self.payer, self.payer],
             blockhash,
         );
         rpc_client

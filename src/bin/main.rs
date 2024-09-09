@@ -3,6 +3,8 @@ use std::error;
 use clap::{Parser, Subcommand};
 use quick::{
     init_ncn::{command_init_ncn, InitNcn},
+    init_ncn_operator_state::{command_init_ncn_operator_state, InitNcnOperatorState},
+    init_ncn_vault_ticket::{command_init_ncn_vault_ticket, InitNcnVaultTicket},
     init_operator::{command_init_operator, InitOperator},
     init_restaking_config::{command_init_restaking_config, InitRestakingConfig},
     init_vault::{command_init_vault, InitVault},
@@ -27,6 +29,10 @@ enum Commands {
 
     InitOperator(InitOperator),
 
+    InitNcnVaultTicket(InitNcnVaultTicket),
+
+    InitNcnOperatorState(InitNcnOperatorState),
+
     CreateTokenMetadata,
     GetConfig,
 }
@@ -45,6 +51,10 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
         Commands::InitNcn(args) => command_init_ncn(args).await,
 
         Commands::InitOperator(args) => command_init_operator(args).await,
+
+        Commands::InitNcnVaultTicket(args) => command_init_ncn_vault_ticket(args).await,
+
+        Commands::InitNcnOperatorState(args) => command_init_ncn_operator_state(args).await,
 
         Commands::CreateTokenMetadata => {}
 
