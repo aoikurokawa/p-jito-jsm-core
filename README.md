@@ -2,12 +2,6 @@
 
 ## Getting started
 
-### Copy .env file
-
-```bash
-cp .env.sample .env
-```
-
 ## Run
 
 ### Code generation
