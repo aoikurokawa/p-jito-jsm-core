@@ -34,7 +34,7 @@ pub struct InitNcnOperatorState {
 }
 
 pub async fn command_init_ncn_operator_state(args: InitNcnOperatorState) {
-    let payer = read_keypair_file(args.keypair).expect("");
+    let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = RestakingHandler::new(&args.rpc_url, &payer, args.restaking_program_id);
     handler
         .initialize_ncn_operator_state(args.ncn, args.operator)

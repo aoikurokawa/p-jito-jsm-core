@@ -26,11 +26,7 @@ pub struct InitRestakingConfig {
 }
 
 pub async fn command_init_restaking_config(args: InitRestakingConfig) {
-    let payer = read_keypair_file(args.keypair).expect("");
-    let handler = RestakingHandler::new(
-        &args.rpc_url,
-        &payer,
-        args.restaking_program_id,
-    );
+    let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
+    let handler = RestakingHandler::new(&args.rpc_url, &payer, args.restaking_program_id);
     handler.initialize_config().await;
 }

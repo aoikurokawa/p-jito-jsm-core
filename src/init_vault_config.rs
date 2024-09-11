@@ -26,7 +26,7 @@ pub struct InitConfig {
 }
 
 pub async fn command_init_vault_config(args: InitConfig) {
-    let payer = read_keypair_file(args.keypair).expect("");
+    let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = VaultHandler::new(&args.rpc_url, &payer, args.vault_program_id);
     handler.initialize_config().await;
 }

@@ -34,7 +34,7 @@ pub struct InitNcnVaultTicket {
 }
 
 pub async fn command_init_ncn_vault_ticket(args: InitNcnVaultTicket) {
-    let payer = read_keypair_file(args.keypair).expect("");
+    let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = RestakingHandler::new(&args.rpc_url, &payer, args.restaking_program_id);
     handler
         .initialize_ncn_vault_ticket(args.ncn, args.vault)

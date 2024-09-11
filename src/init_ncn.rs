@@ -30,7 +30,7 @@ pub struct InitNcn {
 
 pub async fn command_init_ncn(args: InitNcn) {
     let base = Keypair::new();
-    let payer = read_keypair_file(args.keypair).expect("");
+    let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = RestakingHandler::new(&args.rpc_url, &payer, args.restaking_program_id);
 
     handler.initialize_ncn(&base).await;

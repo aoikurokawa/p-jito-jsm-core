@@ -34,7 +34,7 @@ pub struct InitVault {
 
 pub async fn command_init_vault(args: InitVault) {
     let base = Keypair::new();
-    let payer = read_keypair_file(args.keypair).expect("");
+    let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = VaultHandler::new(&args.rpc_url, &payer, args.vault_program_id);
 
     handler.initialize(&base, args.token_mint_pubkey).await;

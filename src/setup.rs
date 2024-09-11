@@ -45,7 +45,7 @@ pub struct Setup {
 
 pub async fn command_setup(args: Setup) {
     let base = Keypair::new();
-    let payer = read_keypair_file(args.keypair).expect("");
+    let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let restaking_handler = RestakingHandler::new(&args.rpc_url, &payer, args.restaking_program_id);
     let vault_handler = VaultHandler::new(&args.rpc_url, &payer, args.vault_program_id);
 
