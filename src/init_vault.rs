@@ -9,7 +9,7 @@ use solana_sdk::{
 use crate::vault_handler::VaultHandler;
 
 #[derive(Parser)]
-#[command(about = "Initialize vault account")]
+#[command(about = "Initialize Vault account")]
 pub struct InitVault {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]

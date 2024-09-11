@@ -6,7 +6,7 @@ use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 use crate::restaking_handler::RestakingHandler;
 
 #[derive(Parser)]
-#[command(about = "Initialize vault account")]
+#[command(about = "Initialize NCN Operator State account")]
 pub struct InitNcnOperatorState {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]

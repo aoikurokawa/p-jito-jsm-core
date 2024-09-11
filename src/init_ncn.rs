@@ -9,7 +9,7 @@ use solana_sdk::{
 use crate::restaking_handler::RestakingHandler;
 
 #[derive(Parser)]
-#[command(about = "Initialize vault account")]
+#[command(about = "Initialize NCN account")]
 pub struct InitNcn {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]

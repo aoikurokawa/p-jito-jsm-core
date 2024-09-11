@@ -6,7 +6,7 @@ use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 use crate::vault_handler::VaultHandler;
 
 #[derive(Parser)]
-#[command(about = "Initialize config account")]
+#[command(about = "Initialize Vault Config account")]
 pub struct InitConfig {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]

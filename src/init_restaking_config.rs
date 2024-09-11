@@ -6,7 +6,7 @@ use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 use crate::restaking_handler::RestakingHandler;
 
 #[derive(Parser)]
-#[command(about = "Initialize config account")]
+#[command(about = "Initialize Restaking config account")]
 pub struct InitRestakingConfig {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]
