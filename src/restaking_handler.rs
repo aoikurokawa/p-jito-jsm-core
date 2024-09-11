@@ -51,16 +51,18 @@ impl<'a> RestakingHandler<'a> {
             &[&self.payer],
             blockhash,
         );
-        rpc_client
+
+        println!("Initialize Restaking Config");
+        let sig = rpc_client
             .send_and_confirm_transaction(&tx)
             .await
             .expect("");
+        println!("Signature: {sig}");
     }
 
-    pub async fn initialize_ncn(&self) {
+    pub async fn initialize_ncn(&self, base: &Keypair) {
         let rpc_client = self.get_rpc_client();
 
-        let base = Keypair::new();
         let ncn = Ncn::find_program_address(&self.restaking_program_id, &base.pubkey()).0;
 
         let mut ix_builder = InitializeNcnBuilder::new();
@@ -81,19 +83,21 @@ impl<'a> RestakingHandler<'a> {
         let tx = Transaction::new_signed_with_payer(
             &[ix],
             Some(&self.payer.pubkey()),
-            &[&self.payer, &base],
+            &[self.payer, base],
             blockhash,
         );
-        rpc_client
+
+        println!("Initialize NCN");
+        let sig = rpc_client
             .send_and_confirm_transaction(&tx)
             .await
             .expect("");
+        println!("Signature: {sig}");
     }
 
-    pub async fn initialize_operator(&self) {
+    pub async fn initialize_operator(&self, base: &Keypair) {
         let rpc_client = self.get_rpc_client();
 
-        let base = Keypair::new();
         let operator = Operator::find_program_address(&self.restaking_program_id, &base.pubkey()).0;
 
         let mut ix_builder = InitializeOperatorBuilder::new();
@@ -114,13 +118,16 @@ impl<'a> RestakingHandler<'a> {
         let tx = Transaction::new_signed_with_payer(
             &[ix],
             Some(&self.payer.pubkey()),
-            &[self.payer, &base],
+            &[self.payer, base],
             blockhash,
         );
-        rpc_client
+
+        println!("Initialize Operator");
+        let sig = rpc_client
             .send_and_confirm_transaction(&tx)
             .await
             .expect("");
+        println!("Signature: {sig}");
     }
 
     pub async fn initialize_ncn_vault_ticket(&self, ncn: Pubkey, vault: Pubkey) {
@@ -152,10 +159,13 @@ impl<'a> RestakingHandler<'a> {
             &[self.payer, self.payer],
             blockhash,
         );
-        rpc_client
+
+        println!("Initialize NCN Vault Ticket");
+        let sig = rpc_client
             .send_and_confirm_transaction(&tx)
             .await
             .expect("");
+        println!("Signature: {sig}");
     }
 
     pub async fn initialize_ncn_operator_state(&self, ncn: Pubkey, operator: Pubkey) {
@@ -187,9 +197,12 @@ impl<'a> RestakingHandler<'a> {
             &[self.payer, self.payer],
             blockhash,
         );
-        rpc_client
+
+        println!("Initialize NCN Operator State");
+        let sig = rpc_client
             .send_and_confirm_transaction(&tx)
             .await
             .expect("");
+        println!("Signature: {sig}");
     }
 }

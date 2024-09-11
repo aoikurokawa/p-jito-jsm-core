@@ -44,16 +44,18 @@ impl<'a> VaultHandler<'a> {
             &[&self.payer],
             blockhash,
         );
-        rpc_client
+
+        println!("Initialize Vault Config");
+        let sig = rpc_client
             .send_and_confirm_transaction(&tx)
             .await
             .expect("");
+        println!("Signature: {sig}");
     }
 
-    pub async fn initialize(&self, token_mint: Pubkey) {
+    pub async fn initialize(&self, base: &Keypair, token_mint: Pubkey) {
         let rpc_client = self.get_rpc_client();
 
-        let base = Keypair::new();
         let vault = Vault::find_program_address(&self.vault_program_id, &base.pubkey()).0;
 
         let vrt_mint = Keypair::new();
@@ -77,15 +79,15 @@ impl<'a> VaultHandler<'a> {
         let tx = Transaction::new_signed_with_payer(
             &[ix],
             Some(&self.payer.pubkey()),
-            &[&self.payer, &base, &vrt_mint],
+            &[self.payer, base, &vrt_mint],
             blockhash,
         );
 
+        println!("Initialize Vault");
         let sig = rpc_client
             .send_and_confirm_transaction(&tx)
             .await
             .expect("");
-
-        println!("Signature {}", sig);
+        println!("Signature {sig}");
     }
 }

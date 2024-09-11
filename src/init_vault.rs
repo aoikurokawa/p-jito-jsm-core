@@ -1,7 +1,10 @@
 use std::path::PathBuf;
 
 use clap::Parser;
-use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
+use solana_sdk::{
+    pubkey::Pubkey,
+    signature::{read_keypair_file, Keypair},
+};
 
 use crate::vault_handler::VaultHandler;
 
@@ -24,14 +27,15 @@ pub struct InitVault {
     )]
     vault_program_id: Pubkey,
 
-    /// Path to keypair for vault admin
+    /// Supported token pubkey
     #[arg(short, long)]
     token_mint_pubkey: Pubkey,
 }
 
 pub async fn command_init_vault(args: InitVault) {
+    let base = Keypair::new();
     let payer = read_keypair_file(args.keypair).expect("");
     let handler = VaultHandler::new(&args.rpc_url, &payer, args.vault_program_id);
 
-    handler.initialize(args.token_mint_pubkey).await;
+    handler.initialize(&base, args.token_mint_pubkey).await;
 }

@@ -1,7 +1,10 @@
 use std::path::PathBuf;
 
 use clap::Parser;
-use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
+use solana_sdk::{
+    pubkey::Pubkey,
+    signature::{read_keypair_file, Keypair},
+};
 
 use crate::restaking_handler::RestakingHandler;
 
@@ -16,7 +19,7 @@ pub struct InitNcn {
     #[arg(long, env, default_value = "~/.config/solana/id.json")]
     keypair: PathBuf,
 
-    /// Validator history program ID (Pubkey as base58 string)
+    /// Restaking Program ID (Pubkey as base58 string)
     #[arg(
         long,
         env,
@@ -26,7 +29,9 @@ pub struct InitNcn {
 }
 
 pub async fn command_init_ncn(args: InitNcn) {
+    let base = Keypair::new();
     let payer = read_keypair_file(args.keypair).expect("");
     let handler = RestakingHandler::new(&args.rpc_url, &payer, args.restaking_program_id);
-    handler.initialize_ncn().await;
+
+    handler.initialize_ncn(&base).await;
 }

@@ -9,6 +9,7 @@ use quick::{
     init_restaking_config::{command_init_restaking_config, InitRestakingConfig},
     init_vault::{command_init_vault, InitVault},
     init_vault_config::{command_init_vault_config, InitConfig},
+    setup::{command_setup, Setup},
 };
 
 #[derive(Parser)]
@@ -33,6 +34,8 @@ enum Commands {
 
     InitNcnOperatorState(InitNcnOperatorState),
 
+    Setup(Setup),
+
     CreateTokenMetadata,
     GetConfig,
 }
@@ -55,6 +58,8 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
         Commands::InitNcnVaultTicket(args) => command_init_ncn_vault_ticket(args).await,
 
         Commands::InitNcnOperatorState(args) => command_init_ncn_operator_state(args).await,
+
+        Commands::Setup(args) => command_setup(args).await,
 
         Commands::CreateTokenMetadata => {}
 
