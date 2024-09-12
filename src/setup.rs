@@ -47,23 +47,38 @@ pub async fn command_setup(args: Setup) {
     let base = Keypair::new();
     let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let restaking_handler = RestakingHandler::new(&args.rpc_url, &payer, args.restaking_program_id);
-    let vault_handler = VaultHandler::new(&args.rpc_url, &payer, args.vault_program_id);
+    let vault_handler = VaultHandler::new(
+        &args.rpc_url,
+        &payer,
+        args.vault_program_id,
+        args.restaking_program_id,
+    );
+    let ncn = Ncn::find_program_address(&args.restaking_program_id, &base.pubkey()).0;
+    let vault = Vault::find_program_address(&args.vault_program_id, &base.pubkey()).0;
 
     vault_handler
         .initialize(&base, args.token_mint_pubkey)
         .await;
 
     restaking_handler.initialize_ncn(&base).await;
-    restaking_handler.initialize_operator(&base).await;
 
-    let ncn = Ncn::find_program_address(&args.restaking_program_id, &base.pubkey()).0;
-    let vault = Vault::find_program_address(&args.vault_program_id, &base.pubkey()).0;
+    // vault <> ncn
     restaking_handler
         .initialize_ncn_vault_ticket(ncn, vault)
         .await;
 
+    // ncn <> operator
     let operator = Operator::find_program_address(&args.restaking_program_id, &base.pubkey()).0;
+    restaking_handler.initialize_operator(&base).await;
     restaking_handler
         .initialize_ncn_operator_state(ncn, operator)
+        .await;
+
+    // vault <> operator
+    restaking_handler
+        .initialize_operator_vault_ticket(operator, vault)
+        .await;
+    vault_handler
+        .initialize_vault_operator_delegation(vault, operator)
         .await;
 }

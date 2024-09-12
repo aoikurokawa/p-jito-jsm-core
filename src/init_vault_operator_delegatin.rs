@@ -6,8 +6,8 @@ use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 use crate::vault_handler::VaultHandler;
 
 #[derive(Parser)]
-#[command(about = "Initialize Vault Config account")]
-pub struct InitConfig {
+#[command(about = "Initialize Vault Operator Delegation account")]
+pub struct InitVaultOperatorDelegation {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]
     rpc_url: String,
@@ -31,9 +31,17 @@ pub struct InitConfig {
         default_value = "78J8YzXGGNynLRpn85MH77PVLBZsWyLCHZAXRvKaB6Ng"
     )]
     restaking_program_id: Pubkey,
+
+    /// Vault pubkey
+    #[arg(long)]
+    vault: Pubkey,
+
+    /// Operator Pubkey
+    #[arg(long)]
+    operator: Pubkey,
 }
 
-pub async fn command_init_vault_config(args: InitConfig) {
+pub async fn command_init_vault_operator_delegation(args: InitVaultOperatorDelegation) {
     let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = VaultHandler::new(
         &args.rpc_url,
@@ -41,5 +49,8 @@ pub async fn command_init_vault_config(args: InitConfig) {
         args.vault_program_id,
         args.restaking_program_id,
     );
-    handler.initialize_config().await;
+
+    handler
+        .initialize_vault_operator_delegation(args.vault, args.operator)
+        .await;
 }
