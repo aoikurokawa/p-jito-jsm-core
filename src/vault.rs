@@ -1,3 +1,8 @@
+pub mod create_token_metadata;
+pub mod init_vault;
+pub mod init_vault_config;
+pub mod init_vault_operator_delegatin;
+
 use jito_restaking_core::operator_vault_ticket::OperatorVaultTicket;
 use jito_vault_client::instructions::{
     InitializeConfigBuilder, InitializeVaultBuilder, InitializeVaultOperatorDelegationBuilder,

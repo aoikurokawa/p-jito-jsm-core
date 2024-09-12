@@ -1,3 +1,10 @@
+pub mod init_ncn;
+pub mod init_ncn_operator_state;
+pub mod init_ncn_vault_ticket;
+pub mod init_operator;
+pub mod init_operator_vault_ticket;
+pub mod init_restaking_config;
+
 use jito_restaking_client::instructions::{
     InitializeNcnBuilder, InitializeNcnOperatorStateBuilder, InitializeNcnVaultTicketBuilder,
     InitializeOperatorBuilder, InitializeOperatorVaultTicketBuilder,

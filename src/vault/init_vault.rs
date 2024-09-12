@@ -1,13 +1,16 @@
 use std::path::PathBuf;
 
 use clap::Parser;
-use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
+use solana_sdk::{
+    pubkey::Pubkey,
+    signature::{read_keypair_file, Keypair},
+};
 
-use crate::vault_handler::VaultHandler;
+use super::VaultHandler;
 
 #[derive(Parser)]
-#[command(about = "Initialize Vault Config account")]
-pub struct InitConfig {
+#[command(about = "Initialize Vault account")]
+pub struct InitVault {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]
     rpc_url: String,
@@ -31,9 +34,14 @@ pub struct InitConfig {
         default_value = "78J8YzXGGNynLRpn85MH77PVLBZsWyLCHZAXRvKaB6Ng"
     )]
     restaking_program_id: Pubkey,
+
+    /// Supported token pubkey
+    #[arg(short, long)]
+    token_mint_pubkey: Pubkey,
 }
 
-pub async fn command_init_vault_config(args: InitConfig) {
+pub async fn command_init_vault(args: InitVault) {
+    let base = Keypair::new();
     let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = VaultHandler::new(
         &args.rpc_url,
@@ -41,5 +49,6 @@ pub async fn command_init_vault_config(args: InitConfig) {
         args.vault_program_id,
         args.restaking_program_id,
     );
-    handler.initialize_config().await;
+
+    handler.initialize(&base, args.token_mint_pubkey).await;
 }

@@ -3,11 +3,11 @@ use std::path::PathBuf;
 use clap::Parser;
 use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 
-use crate::vault_handler::VaultHandler;
+use super::VaultHandler;
 
 #[derive(Parser)]
-#[command(about = "Initialize Vault Operator Delegation account")]
-pub struct InitVaultOperatorDelegation {
+#[command(about = "Initialize Vault Config account")]
+pub struct InitConfig {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]
     rpc_url: String,
@@ -31,17 +31,9 @@ pub struct InitVaultOperatorDelegation {
         default_value = "78J8YzXGGNynLRpn85MH77PVLBZsWyLCHZAXRvKaB6Ng"
     )]
     restaking_program_id: Pubkey,
-
-    /// Vault pubkey
-    #[arg(long)]
-    vault: Pubkey,
-
-    /// Operator Pubkey
-    #[arg(long)]
-    operator: Pubkey,
 }
 
-pub async fn command_init_vault_operator_delegation(args: InitVaultOperatorDelegation) {
+pub async fn command_init_vault_config(args: InitConfig) {
     let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = VaultHandler::new(
         &args.rpc_url,
@@ -49,8 +41,5 @@ pub async fn command_init_vault_operator_delegation(args: InitVaultOperatorDeleg
         args.vault_program_id,
         args.restaking_program_id,
     );
-
-    handler
-        .initialize_vault_operator_delegation(args.vault, args.operator)
-        .await;
+    handler.initialize_config().await;
 }

@@ -1,16 +1,13 @@
 use std::path::PathBuf;
 
 use clap::Parser;
-use solana_sdk::{
-    pubkey::Pubkey,
-    signature::{read_keypair_file, Keypair},
-};
+use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 
-use crate::restaking_handler::RestakingHandler;
+use super::RestakingHandler;
 
 #[derive(Parser)]
-#[command(about = "Initialize Operator account")]
-pub struct InitOperator {
+#[command(about = "Initialize Restaking config account")]
+pub struct InitRestakingConfig {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]
     rpc_url: String,
@@ -19,7 +16,7 @@ pub struct InitOperator {
     #[arg(long, env, default_value = "~/.config/solana/id.json")]
     keypair: PathBuf,
 
-    /// Restaking Program ID (Pubkey as base58 string)
+    /// Validator history program ID (Pubkey as base58 string)
     #[arg(
         long,
         env,
@@ -28,10 +25,8 @@ pub struct InitOperator {
     restaking_program_id: Pubkey,
 }
 
-pub async fn command_init_operator(args: InitOperator) {
-    let base = Keypair::new();
+pub async fn command_init_restaking_config(args: InitRestakingConfig) {
     let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = RestakingHandler::new(&args.rpc_url, &payer, args.restaking_program_id);
-
-    handler.initialize_operator(&base).await;
+    handler.initialize_config().await;
 }

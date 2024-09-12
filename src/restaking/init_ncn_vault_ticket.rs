@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::Parser;
 use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 
-use crate::restaking_handler::RestakingHandler;
+use super::RestakingHandler;
 
 #[derive(Parser)]
 #[command(about = "Initialize NCN Vault Ticket account")]

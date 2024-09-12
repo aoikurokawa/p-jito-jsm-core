@@ -9,7 +9,7 @@ use solana_sdk::{
     signer::Signer,
 };
 
-use crate::{restaking_handler::RestakingHandler, vault_handler::VaultHandler};
+use crate::{restaking::RestakingHandler, vault::VaultHandler};
 
 #[derive(Parser)]
 #[command(about = "Setup Restaking Registration and Vault")]
