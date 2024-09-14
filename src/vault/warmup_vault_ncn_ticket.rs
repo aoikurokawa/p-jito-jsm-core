@@ -1,16 +1,13 @@
 use std::path::PathBuf;
 
 use clap::Parser;
-use solana_sdk::{
-    pubkey::Pubkey,
-    signature::{read_keypair_file, Keypair},
-};
+use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 
-use crate::vault_handler::VaultHandler;
+use super::VaultHandler;
 
 #[derive(Parser)]
-#[command(about = "Initialize Vault account")]
-pub struct InitVault {
+#[command(about = "Warmup Vault NCN Ticket account")]
+pub struct WarmupVaultNcnTicket {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]
     rpc_url: String,
@@ -35,13 +32,16 @@ pub struct InitVault {
     )]
     restaking_program_id: Pubkey,
 
-    /// Supported token pubkey
-    #[arg(short, long)]
-    token_mint_pubkey: Pubkey,
+    /// Vault pubkey
+    #[arg(long)]
+    vault: Pubkey,
+
+    /// NCN Pubkey
+    #[arg(long)]
+    ncn: Pubkey,
 }
 
-pub async fn command_init_vault(args: InitVault) {
-    let base = Keypair::new();
+pub async fn command_warmup_vault_ncn_ticket(args: WarmupVaultNcnTicket) {
     let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = VaultHandler::new(
         &args.rpc_url,
@@ -50,5 +50,5 @@ pub async fn command_init_vault(args: InitVault) {
         args.restaking_program_id,
     );
 
-    handler.initialize(&base, args.token_mint_pubkey).await;
+    handler.warmup_vault_ncn_ticket(args.vault, args.ncn).await;
 }

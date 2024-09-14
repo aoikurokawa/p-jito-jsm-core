@@ -3,11 +3,11 @@ use std::path::PathBuf;
 use clap::Parser;
 use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 
-use crate::restaking_handler::RestakingHandler;
+use super::RestakingHandler;
 
 #[derive(Parser)]
-#[command(about = "Initialize Operator Vault Ticket account")]
-pub struct InitOperatorVaultTicket {
+#[command(about = "Warmup NCN Operator account")]
+pub struct NcnWarmupOperator {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]
     rpc_url: String,
@@ -26,17 +26,15 @@ pub struct InitOperatorVaultTicket {
 
     /// NCN pubkey
     #[arg(long)]
-    operator: Pubkey,
+    ncn: Pubkey,
 
-    /// Vault Pubkey
+    /// Operator Pubkey
     #[arg(long)]
-    vault: Pubkey,
+    operator: Pubkey,
 }
 
-pub async fn command_init_operator_vault_ticket(args: InitOperatorVaultTicket) {
+pub async fn command_ncn_warmup_operator_state(args: NcnWarmupOperator) {
     let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = RestakingHandler::new(&args.rpc_url, &payer, args.restaking_program_id);
-    handler
-        .initialize_operator_vault_ticket(args.operator, args.vault)
-        .await;
+    handler.ncn_warmup_operator(args.ncn, args.operator).await;
 }

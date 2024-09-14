@@ -1,14 +1,25 @@
-use jito_restaking_core::operator_vault_ticket::OperatorVaultTicket;
+pub mod create_token_metadata;
+pub mod init_vault;
+pub mod init_vault_config;
+pub mod init_vault_ncn_ticket;
+pub mod init_vault_operator_delegatin;
+pub mod warmup_vault_ncn_ticket;
+
+use jito_restaking_core::{
+    ncn_vault_ticket::NcnVaultTicket, operator_vault_ticket::OperatorVaultTicket,
+};
 use jito_vault_client::instructions::{
-    InitializeConfigBuilder, InitializeVaultBuilder, InitializeVaultOperatorDelegationBuilder,
+    InitializeConfigBuilder, InitializeVaultBuilder, InitializeVaultNcnTicketBuilder,
+    InitializeVaultOperatorDelegationBuilder, WarmupVaultNcnTicketBuilder,
 };
 use jito_vault_core::{
-    config::Config, vault::Vault, vault_operator_delegation::VaultOperatorDelegation,
+    config::Config, vault::Vault, vault_ncn_ticket::VaultNcnTicket,
+    vault_operator_delegation::VaultOperatorDelegation,
 };
 use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_sdk::{
-    commitment_config::CommitmentConfig, pubkey, pubkey::Pubkey, signature::Keypair,
-    signer::Signer, transaction::Transaction,
+    commitment_config::CommitmentConfig, pubkey::Pubkey, signature::Keypair, signer::Signer,
+    transaction::Transaction,
 };
 
 pub struct VaultHandler<'a> {
@@ -45,7 +56,7 @@ impl<'a> VaultHandler<'a> {
         let ix_builder = ix_builder
             .config(config_address)
             .admin(self.payer.pubkey())
-            .restaking_program(pubkey!("7nVGRMDvUNLMeX6RLCo4qNSUEhSwW7k8wVQ7a8u1GFAp"));
+            .restaking_program(self.restaking_program_id);
         let mut ix = ix_builder.instruction();
         ix.program_id = self.vault_program_id;
 
@@ -140,6 +151,74 @@ impl<'a> VaultHandler<'a> {
         );
 
         println!("Initialize Vault Operator Delegation");
+        let sig = rpc_client
+            .send_and_confirm_transaction(&tx)
+            .await
+            .expect("");
+        println!("Signature {sig}");
+    }
+
+    pub async fn initialize_vault_ncn_ticket(&self, vault: Pubkey, ncn: Pubkey) {
+        let rpc_client = self.get_rpc_client();
+
+        let ncn_vault_ticket =
+            NcnVaultTicket::find_program_address(&self.restaking_program_id, &ncn, &vault).0;
+        let vault_ncn_ticket =
+            VaultNcnTicket::find_program_address(&self.vault_program_id, &vault, &ncn).0;
+
+        let mut ix_builder = InitializeVaultNcnTicketBuilder::new();
+        ix_builder
+            .config(Config::find_program_address(&self.vault_program_id).0)
+            .vault(vault)
+            .ncn(ncn)
+            .ncn_vault_ticket(ncn_vault_ticket)
+            .vault_ncn_ticket(vault_ncn_ticket)
+            .admin(self.payer.pubkey())
+            .payer(self.payer.pubkey());
+        let mut ix = ix_builder.instruction();
+        ix.program_id = self.vault_program_id;
+
+        let blockhash = rpc_client.get_latest_blockhash().await.expect("");
+        let tx = Transaction::new_signed_with_payer(
+            &[ix],
+            Some(&self.payer.pubkey()),
+            &[self.payer, self.payer],
+            blockhash,
+        );
+
+        println!("Initialize Vault NCN Ticket");
+        let sig = rpc_client
+            .send_and_confirm_transaction(&tx)
+            .await
+            .expect("");
+        println!("Signature {sig}");
+    }
+
+    pub async fn warmup_vault_ncn_ticket(&self, vault: Pubkey, ncn: Pubkey) {
+        let rpc_client = self.get_rpc_client();
+
+        let vault_ncn_ticket =
+            VaultNcnTicket::find_program_address(&self.vault_program_id, &vault, &ncn).0;
+
+        let mut ix_builder = WarmupVaultNcnTicketBuilder::new();
+        ix_builder
+            .config(Config::find_program_address(&self.vault_program_id).0)
+            .vault(vault)
+            .ncn(ncn)
+            .vault_ncn_ticket(vault_ncn_ticket)
+            .admin(self.payer.pubkey());
+        let mut ix = ix_builder.instruction();
+        ix.program_id = self.vault_program_id;
+
+        let blockhash = rpc_client.get_latest_blockhash().await.expect("");
+        let tx = Transaction::new_signed_with_payer(
+            &[ix],
+            Some(&self.payer.pubkey()),
+            &[self.payer, self.payer],
+            blockhash,
+        );
+
+        println!("Warmup Vault NCN Ticket");
         let sig = rpc_client
             .send_and_confirm_transaction(&tx)
             .await
