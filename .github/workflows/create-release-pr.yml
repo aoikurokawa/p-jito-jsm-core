@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Input version'
+        description: 'Version'
         required: true
 
 jobs:
@@ -27,3 +27,6 @@ jobs:
         uses: bakunyo/git-pr-release-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: '--squashed' # If you are using squash merge
+
