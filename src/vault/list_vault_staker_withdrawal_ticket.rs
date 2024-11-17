@@ -1,16 +1,14 @@
 use std::path::PathBuf;
 
 use clap::Parser;
-use solana_sdk::{
-    pubkey::Pubkey,
-    signature::{read_keypair_file, Keypair},
-};
+use jito_vault_core::vault_staker_withdrawal_ticket::VaultStakerWithdrawalTicket;
+use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 
 use super::VaultHandler;
 
 #[derive(Parser)]
-#[command(about = "Initialize Vault account")]
-pub struct InitVault {
+#[command(about = "List Vault Staker Withdrawal Ticket account")]
+pub struct ListVaultStakerWithdrawalTicket {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]
     rpc_url: String,
@@ -23,25 +21,20 @@ pub struct InitVault {
     #[arg(
         long,
         env,
-        default_value = "BLCDL7LqxaYWxSEkayc4VYjs3iCNJJw8SQzsvEL2uVT"
+        default_value = "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8"
     )]
     vault_program_id: Pubkey,
 
-    /// Vault program ID (Pubkey as base58 string)
+    /// Restaking program ID (Pubkey as base58 string)
     #[arg(
         long,
         env,
-        default_value = "78J8YzXGGNynLRpn85MH77PVLBZsWyLCHZAXRvKaB6Ng"
+        default_value = "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q"
     )]
     restaking_program_id: Pubkey,
-
-    /// Supported token pubkey
-    #[arg(short, long)]
-    token_mint_pubkey: Pubkey,
 }
 
-pub async fn command_init_vault(args: InitVault) {
-    let base = Keypair::new();
+pub async fn command_list_vault_staker_withdrawal_ticket(args: ListVaultStakerWithdrawalTicket) {
     let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = VaultHandler::new(
         &args.rpc_url,
@@ -50,5 +43,5 @@ pub async fn command_init_vault(args: InitVault) {
         args.restaking_program_id,
     );
 
-    handler.initialize(&base, args.token_mint_pubkey).await;
+    handler.list_accounts::<VaultStakerWithdrawalTicket>().await
 }

@@ -6,8 +6,8 @@ use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 use super::VaultHandler;
 
 #[derive(Parser)]
-#[command(about = "Initialize Vault NCN Ticket account")]
-pub struct InitVaultNcnTicket {
+#[command(about = "Initialize Vault account")]
+pub struct ListVaultNcnSlasherOperatorTicket {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]
     rpc_url: String,
@@ -20,7 +20,7 @@ pub struct InitVaultNcnTicket {
     #[arg(
         long,
         env,
-        default_value = "BLCDL7LqxaYWxSEkayc4VYjs3iCNJJw8SQzsvEL2uVT"
+        default_value = "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8"
     )]
     vault_program_id: Pubkey,
 
@@ -28,20 +28,14 @@ pub struct InitVaultNcnTicket {
     #[arg(
         long,
         env,
-        default_value = "78J8YzXGGNynLRpn85MH77PVLBZsWyLCHZAXRvKaB6Ng"
+        default_value = "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q"
     )]
     restaking_program_id: Pubkey,
-
-    /// Vault pubkey
-    #[arg(long)]
-    vault: Pubkey,
-
-    /// NCN Pubkey
-    #[arg(long)]
-    ncn: Pubkey,
 }
 
-pub async fn command_init_vault_ncn_ticket(args: InitVaultNcnTicket) {
+pub async fn command_list_vault_ncn_slasher_operator_ticket(
+    args: ListVaultNcnSlasherOperatorTicket,
+) {
     let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = VaultHandler::new(
         &args.rpc_url,
@@ -50,7 +44,5 @@ pub async fn command_init_vault_ncn_ticket(args: InitVaultNcnTicket) {
         args.restaking_program_id,
     );
 
-    handler
-        .initialize_vault_ncn_ticket(args.vault, args.ncn)
-        .await;
+    handler.list_vault_ncn_slasher_operator_ticket().await;
 }

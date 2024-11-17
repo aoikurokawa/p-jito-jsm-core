@@ -1,18 +1,16 @@
 use std::path::PathBuf;
 
 use clap::Parser;
-use solana_sdk::{
-    pubkey::Pubkey,
-    signature::{read_keypair_file, Keypair},
-};
+use jito_restaking_core::ncn::Ncn;
+use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 
 use super::RestakingHandler;
 
 #[derive(Parser)]
-#[command(about = "Initialize NCN account")]
-pub struct InitNcn {
+#[command(about = "Fetch NCN accounts")]
+pub struct ListNcn {
     /// RPC URL for the cluster
-    #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]
+    #[arg(short, long, env, default_value = "https://api.testnet.solana.com")]
     rpc_url: String,
 
     /// Path to keypair used to pay
@@ -23,15 +21,14 @@ pub struct InitNcn {
     #[arg(
         long,
         env,
-        default_value = "5b2dHDz9DLhXnwQDG612bgtBGJD62Riw9s9eYuDT3Zma"
+        default_value = "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q"
     )]
     restaking_program_id: Pubkey,
 }
 
-pub async fn command_init_ncn(args: InitNcn) {
-    let base = Keypair::new();
+pub async fn command_list_ncn(args: ListNcn) {
     let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = RestakingHandler::new(&args.rpc_url, &payer, args.restaking_program_id);
 
-    handler.initialize_ncn(&base).await;
+    handler.list_account::<Ncn>().await
 }

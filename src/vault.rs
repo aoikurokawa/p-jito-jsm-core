@@ -1,22 +1,28 @@
-pub mod create_token_metadata;
-pub mod init_vault;
-pub mod init_vault_config;
-pub mod init_vault_ncn_ticket;
-pub mod init_vault_operator_delegatin;
-pub mod warmup_vault_ncn_ticket;
+pub mod list_vault_ncn_slasher_operator_ticket;
+pub mod list_vault_ncn_slasher_ticket;
+pub mod list_vault_ncn_ticket;
+pub mod list_vault_operator_delegation;
+pub mod list_vault_staker_withdrawal_ticket;
 
+use jito_bytemuck::{AccountDeserialize, Discriminator};
 use jito_restaking_core::{
     ncn_vault_ticket::NcnVaultTicket, operator_vault_ticket::OperatorVaultTicket,
 };
 use jito_vault_client::instructions::{
-    InitializeConfigBuilder, InitializeVaultBuilder, InitializeVaultNcnTicketBuilder,
-    InitializeVaultOperatorDelegationBuilder, WarmupVaultNcnTicketBuilder,
+    InitializeVaultNcnTicketBuilder, InitializeVaultOperatorDelegationBuilder,
+    WarmupVaultNcnTicketBuilder,
 };
 use jito_vault_core::{
-    config::Config, vault::Vault, vault_ncn_ticket::VaultNcnTicket,
+    config::Config, vault_ncn_slasher_operator_ticket::VaultNcnSlasherOperatorTicket,
+    vault_ncn_slasher_ticket::VaultNcnSlasherTicket, vault_ncn_ticket::VaultNcnTicket,
     vault_operator_delegation::VaultOperatorDelegation,
 };
-use solana_client::nonblocking::rpc_client::RpcClient;
+use solana_account_decoder::UiAccountEncoding;
+use solana_client::{
+    nonblocking::rpc_client::RpcClient,
+    rpc_config::{RpcAccountInfoConfig, RpcProgramAccountsConfig},
+    rpc_filter::{Memcmp, MemcmpEncodedBytes, RpcFilterType},
+};
 use solana_sdk::{
     commitment_config::CommitmentConfig, pubkey::Pubkey, signature::Keypair, signer::Signer,
     transaction::Transaction,
@@ -48,70 +54,151 @@ impl<'a> VaultHandler<'a> {
         RpcClient::new_with_commitment(self.rpc_url.clone(), CommitmentConfig::confirmed())
     }
 
-    pub async fn initialize_config(&self) {
+    pub async fn list_vault_ncn_slasher_operator_ticket(&self) {
         let rpc_client = self.get_rpc_client();
-
-        let mut ix_builder = InitializeConfigBuilder::new();
-        let config_address = Config::find_program_address(&self.vault_program_id).0;
-        let ix_builder = ix_builder
-            .config(config_address)
-            .admin(self.payer.pubkey())
-            .restaking_program(self.restaking_program_id);
-        let mut ix = ix_builder.instruction();
-        ix.program_id = self.vault_program_id;
-
-        let blockhash = rpc_client.get_latest_blockhash().await.expect("");
-        let tx = Transaction::new_signed_with_payer(
-            &[ix],
-            Some(&self.payer.pubkey()),
-            &[&self.payer],
-            blockhash,
-        );
-
-        println!("Initialize Vault Config");
-        let sig = rpc_client
-            .send_and_confirm_transaction(&tx)
+        let accounts = rpc_client
+            .get_program_accounts_with_config(
+                &self.vault_program_id,
+                RpcProgramAccountsConfig {
+                    filters: Some(vec![RpcFilterType::Memcmp(Memcmp::new(
+                        0,
+                        MemcmpEncodedBytes::Bytes(vec![
+                            VaultNcnSlasherOperatorTicket::DISCRIMINATOR,
+                        ]),
+                    ))]),
+                    account_config: RpcAccountInfoConfig {
+                        encoding: Some(UiAccountEncoding::Base64),
+                        data_slice: None,
+                        commitment: None,
+                        min_context_slot: None,
+                    },
+                    with_context: None,
+                },
+            )
             .await
-            .expect("");
-        println!("Signature: {sig}");
+            .expect("Failed to get NCNs");
+
+        let _ncns: Vec<(Pubkey, VaultNcnSlasherOperatorTicket)> = accounts
+            .iter()
+            .filter_map(|(pubkey, acc)| {
+                println!("VaultNcnSlasherOperatorTicket pubkey: {}", pubkey);
+                println!("VaultNcnSlasherOperatorTicket acc data: {:?}", acc.data);
+                let vault_ncn_slasher_operator_ticket =
+                    VaultNcnSlasherOperatorTicket::try_from_slice_unchecked(&acc.data)
+                        .expect("Failed to deseriaze VaultNcnSlasherOperatorTicket");
+                println!(
+                    "VaultNcnSlasherOperatorTicket {:?}",
+                    vault_ncn_slasher_operator_ticket
+                );
+                Some((*pubkey, *vault_ncn_slasher_operator_ticket))
+            })
+            .collect();
     }
 
-    pub async fn initialize(&self, base: &Keypair, token_mint: Pubkey) {
+    pub async fn list_vault_ncn_slasher_ticket(&self) {
         let rpc_client = self.get_rpc_client();
-
-        let vault = Vault::find_program_address(&self.vault_program_id, &base.pubkey()).0;
-
-        let vrt_mint = Keypair::new();
-
-        let mut ix_builder = InitializeVaultBuilder::new();
-        ix_builder
-            .config(Config::find_program_address(&self.vault_program_id).0)
-            .vault(vault)
-            .vrt_mint(vrt_mint.pubkey())
-            .token_mint(token_mint)
-            .admin(self.payer.pubkey())
-            .base(base.pubkey())
-            .deposit_fee_bps(0)
-            .withdrawal_fee_bps(0)
-            .reward_fee_bps(0)
-            .decimals(9);
-        let mut ix = ix_builder.instruction();
-        ix.program_id = self.vault_program_id;
-
-        let blockhash = rpc_client.get_latest_blockhash().await.expect("");
-        let tx = Transaction::new_signed_with_payer(
-            &[ix],
-            Some(&self.payer.pubkey()),
-            &[self.payer, base, &vrt_mint],
-            blockhash,
-        );
-
-        println!("Initialize Vault");
-        let sig = rpc_client
-            .send_and_confirm_transaction(&tx)
+        let accounts = rpc_client
+            .get_program_accounts_with_config(
+                &self.vault_program_id,
+                RpcProgramAccountsConfig {
+                    filters: Some(vec![RpcFilterType::Memcmp(Memcmp::new(
+                        0,
+                        MemcmpEncodedBytes::Bytes(vec![VaultNcnSlasherTicket::DISCRIMINATOR]),
+                    ))]),
+                    account_config: RpcAccountInfoConfig {
+                        encoding: Some(UiAccountEncoding::Base64),
+                        data_slice: None,
+                        commitment: None,
+                        min_context_slot: None,
+                    },
+                    with_context: None,
+                },
+            )
             .await
-            .expect("");
-        println!("Signature {sig}");
+            .expect("Failed to get VaultNcnSlasherTicket");
+
+        let _ncns: Vec<(Pubkey, VaultNcnSlasherTicket)> = accounts
+            .iter()
+            .filter_map(|(pubkey, acc)| {
+                println!("VaultNcnSlasherTicket pubkey: {}", pubkey);
+                println!("VaultNcnSlasherTicket acc data: {:?}", acc.data);
+                let vault_ncn_slasher_ticket =
+                    VaultNcnSlasherTicket::try_from_slice_unchecked(&acc.data)
+                        .expect("Failed to deseriaze VaultNcnSlasherTicket");
+                println!("VaultNcnSlasherTicket {:?}", vault_ncn_slasher_ticket);
+                Some((*pubkey, *vault_ncn_slasher_ticket))
+            })
+            .collect();
+    }
+
+    pub async fn list_vault_ncn_ticket(&self) {
+        let rpc_client = self.get_rpc_client();
+        let accounts = rpc_client
+            .get_program_accounts_with_config(
+                &self.vault_program_id,
+                RpcProgramAccountsConfig {
+                    filters: Some(vec![RpcFilterType::Memcmp(Memcmp::new(
+                        0,
+                        MemcmpEncodedBytes::Bytes(vec![VaultNcnTicket::DISCRIMINATOR]),
+                    ))]),
+                    account_config: RpcAccountInfoConfig {
+                        encoding: Some(UiAccountEncoding::Base64),
+                        data_slice: None,
+                        commitment: None,
+                        min_context_slot: None,
+                    },
+                    with_context: None,
+                },
+            )
+            .await
+            .expect("Failed to get VaultNcnTicket");
+
+        let _ncns: Vec<(Pubkey, VaultNcnTicket)> = accounts
+            .iter()
+            .filter_map(|(pubkey, acc)| {
+                println!("VaultNcnTicket pubkey: {}", pubkey);
+                println!("VaultNcnTicket acc data: {:?}", acc.data);
+                let vault_ncn_ticket = VaultNcnTicket::try_from_slice_unchecked(&acc.data)
+                    .expect("Failed to deseriaze VaultNcnTicket");
+                println!("VaultNcnTicket {:?}", vault_ncn_ticket);
+                Some((*pubkey, *vault_ncn_ticket))
+            })
+            .collect();
+    }
+
+    pub async fn list_accounts<T: Discriminator + AccountDeserialize + std::fmt::Debug>(&self) {
+        let rpc_client = self.get_rpc_client();
+        let accounts = rpc_client
+            .get_program_accounts_with_config(
+                &self.vault_program_id,
+                RpcProgramAccountsConfig {
+                    filters: Some(vec![RpcFilterType::Memcmp(Memcmp::new(
+                        0,
+                        MemcmpEncodedBytes::Bytes(vec![T::DISCRIMINATOR]),
+                    ))]),
+                    account_config: RpcAccountInfoConfig {
+                        encoding: Some(UiAccountEncoding::Base64),
+                        data_slice: None,
+                        commitment: None,
+                        min_context_slot: None,
+                    },
+                    with_context: None,
+                },
+            )
+            .await
+            .expect("Failed to get VaultNcnTicket");
+
+        let _ncns: Vec<(Pubkey, T)> = accounts
+            .iter()
+            .filter_map(|(pubkey, acc)| {
+                println!("VaultNcnTicket pubkey: {}", pubkey);
+                println!("VaultNcnTicket acc data: {:?}", acc.data);
+                let vault_ncn_ticket = T::try_from_slice_unchecked(&acc.data)
+                    .expect("Failed to deseriaze VaultNcnTicket");
+                println!("VaultNcnTicket {:?}", vault_ncn_ticket);
+                Some((*pubkey, *vault_ncn_ticket))
+            })
+            .collect();
     }
 
     pub async fn initialize_vault_operator_delegation(&self, vault: Pubkey, operator: Pubkey) {
