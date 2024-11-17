@@ -1,4 +1,4 @@
-# Quick
+# Restaking CLI
 
 ## Getting started
 
@@ -27,9 +27,6 @@ cargo-build-sbf && SBF_OUT_DIR=$(pwd)/target/sbf-solana-solana/release cargo nex
 ```bash
 cargo nextest run --all-features
 ```
-
-
-
 
 ## Resources
 - [Kinobi](https://github.com/kinobi-so/kinobi)

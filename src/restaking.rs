@@ -37,10 +37,20 @@ pub enum ConfigActions {
 pub enum NcnActions {
     /// Initialize NCN
     Initialize,
+    /// Initialize NcnVaultTicket
+    InitializeNcnVaultTicket { ncn: String, vault: String },
+    /// Initialize NcnVaultSlasherTicket
+    InitializeNcnVaultSlasherTicket {
+        ncn: String,
+        vault: String,
+        slasher: String,
+    },
     /// Get NCN
     Get { pubkey: String },
     /// List all NCNs
     List,
+    /// List all NcnVaultSlasherTicket
+    ListNcnVaultSlasherTicket,
 }
 
 #[derive(Subcommand)]

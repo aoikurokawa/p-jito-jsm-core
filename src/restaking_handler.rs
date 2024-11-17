@@ -3,11 +3,14 @@ use std::str::FromStr;
 use anyhow::{anyhow, Result};
 use jito_bytemuck::{AccountDeserialize, Discriminator};
 use jito_restaking_client::instructions::{
-    InitializeConfigBuilder, InitializeNcnBuilder, InitializeOperatorBuilder,
+    InitializeConfigBuilder, InitializeNcnBuilder, InitializeNcnVaultSlasherTicketBuilder,
+    InitializeNcnVaultTicketBuilder, InitializeOperatorBuilder,
     InitializeOperatorVaultTicketBuilder, SetConfigAdminBuilder, WarmupOperatorVaultTicketBuilder,
 };
 use jito_restaking_core::{
-    config::Config, ncn::Ncn, operator::Operator, operator_vault_ticket::OperatorVaultTicket,
+    config::Config, ncn::Ncn, ncn_vault_slasher_ticket::NcnVaultSlasherTicket,
+    ncn_vault_ticket::NcnVaultTicket, operator::Operator,
+    operator_vault_ticket::OperatorVaultTicket,
 };
 use log::{debug, info};
 use solana_account_decoder::UiAccountEncoding;
@@ -52,6 +55,7 @@ impl RestakingCliHandler {
 
     pub async fn handle(&self, action: RestakingCommands) -> Result<()> {
         match action {
+            // Config
             RestakingCommands::Config {
                 action: ConfigActions::Initialize,
             } => self.initialize_config().await,
@@ -61,15 +65,36 @@ impl RestakingCliHandler {
             RestakingCommands::Config {
                 action: ConfigActions::SetAdmin { new_admin },
             } => self.set_config_admin(new_admin).await,
+
+            // Ncn
             RestakingCommands::Ncn {
                 action: NcnActions::Initialize,
             } => self.initialize_ncn().await,
+            RestakingCommands::Ncn {
+                action:
+                    NcnActions::InitializeNcnVaultSlasherTicket {
+                        ncn,
+                        vault,
+                        slasher,
+                    },
+            } => {
+                self.initialize_ncn_vault_slasher_ticket(ncn, vault, slasher)
+                    .await
+            }
+            RestakingCommands::Ncn {
+                action: NcnActions::InitializeNcnVaultTicket { ncn, vault },
+            } => self.initialize_ncn_vault_ticket(ncn, vault).await,
             RestakingCommands::Ncn {
                 action: NcnActions::Get { pubkey },
             } => self.get_ncn(pubkey).await,
             RestakingCommands::Ncn {
                 action: NcnActions::List,
             } => self.list_ncn().await,
+            RestakingCommands::Ncn {
+                action: NcnActions::ListNcnVaultSlasherTicket,
+            } => self.list_ncn_vault_slasher_ticket().await,
+
+            // Operator
             RestakingCommands::Operator {
                 action: OperatorActions::Initialize { operator_fee_bps },
             } => self.initialize_operator(operator_fee_bps).await,
@@ -370,6 +395,41 @@ impl RestakingCliHandler {
         Ok(())
     }
 
+    pub async fn list_ncn_vault_slasher_ticket(&self) -> Result<()> {
+        let rpc_client = self.get_rpc_client();
+        let accounts = rpc_client
+            .get_program_accounts_with_config(
+                &self.restaking_program_id,
+                RpcProgramAccountsConfig {
+                    filters: Some(vec![RpcFilterType::Memcmp(Memcmp::new(
+                        0,
+                        MemcmpEncodedBytes::Bytes(vec![NcnVaultSlasherTicket::DISCRIMINATOR]),
+                    ))]),
+                    account_config: RpcAccountInfoConfig {
+                        encoding: Some(UiAccountEncoding::Base64),
+                        data_slice: None,
+                        commitment: None,
+                        min_context_slot: None,
+                    },
+                    with_context: None,
+                },
+            )
+            .await?;
+        for (ncn_vault_slasher_ticket_pubkey, ncn_vault_slasher_ticket) in accounts {
+            info!(
+                "NCN Vault Slasher Ticket data: {:?}",
+                ncn_vault_slasher_ticket.data
+            );
+            let ncn_vault_slasher_ticket =
+                NcnVaultSlasherTicket::try_from_slice_unchecked(&ncn_vault_slasher_ticket.data)?;
+            info!(
+                "NCN Vault Slasher Ticket at address {}: {:?}",
+                ncn_vault_slasher_ticket_pubkey, ncn_vault_slasher_ticket
+            );
+        }
+        Ok(())
+    }
+
     pub async fn get_operator(&self, pubkey: String) -> Result<()> {
         let pubkey = Pubkey::from_str(&pubkey)?;
         let account = self.get_rpc_client().get_account(&pubkey).await?;
@@ -438,6 +498,118 @@ impl RestakingCliHandler {
         );
         rpc_client.send_and_confirm_transaction(&tx).await?;
         info!("Transaction confirmed: {:?}", tx.get_signature());
+        Ok(())
+    }
+
+    pub async fn initialize_ncn_vault_ticket(&self, ncn: String, vault: String) -> Result<()> {
+        let keypair = self
+            .cli_config
+            .keypair
+            .as_ref()
+            .ok_or_else(|| anyhow!("Keypair not provided"))?;
+        let rpc_client = self.get_rpc_client();
+
+        let ncn = Pubkey::from_str(&ncn)?;
+        let vault = Pubkey::from_str(&vault)?;
+
+        let ncn_vault_ticket =
+            NcnVaultTicket::find_program_address(&self.restaking_program_id, &ncn, &vault).0;
+
+        let mut ix_builder = InitializeNcnVaultTicketBuilder::new();
+        ix_builder
+            .config(Config::find_program_address(&self.restaking_program_id).0)
+            .ncn(ncn)
+            .vault(vault)
+            .ncn_vault_ticket(ncn_vault_ticket)
+            .admin(keypair.pubkey())
+            .payer(keypair.pubkey());
+
+        let blockhash = rpc_client.get_latest_blockhash().await?;
+        let tx = Transaction::new_signed_with_payer(
+            &[ix_builder.instruction()],
+            Some(&keypair.pubkey()),
+            &[keypair],
+            blockhash,
+        );
+
+        info!(
+            "Initializing ncn vault ticket transaction: {:?}",
+            tx.get_signature()
+        );
+        let result = rpc_client.send_and_confirm_transaction(&tx).await?;
+        info!("Transaction confirmed: {:?}", result);
+
+        info!("\nCreated Ncn Vault Ticket");
+        info!("Ncn address: {}", ncn);
+        info!("Vault address: {}", vault);
+        info!("Ncn Vault Ticket address: {}", ncn_vault_ticket);
+
+        Ok(())
+    }
+
+    pub async fn initialize_ncn_vault_slasher_ticket(
+        &self,
+        ncn: String,
+        vault: String,
+        slasher: String,
+    ) -> Result<()> {
+        let keypair = self
+            .cli_config
+            .keypair
+            .as_ref()
+            .ok_or_else(|| anyhow!("Keypair not provided"))?;
+        let rpc_client = self.get_rpc_client();
+
+        let ncn = Pubkey::from_str(&ncn)?;
+        let vault = Pubkey::from_str(&vault)?;
+        let slasher = Pubkey::from_str(&slasher)?;
+
+        let ncn_vault_ticket =
+            NcnVaultTicket::find_program_address(&self.restaking_program_id, &ncn, &vault).0;
+        let ncn_vault_slasher_ticket = NcnVaultSlasherTicket::find_program_address(
+            &self.restaking_program_id,
+            &ncn,
+            &vault,
+            &slasher,
+        )
+        .0;
+
+        let mut ix_builder = InitializeNcnVaultSlasherTicketBuilder::new();
+        ix_builder
+            .config(Config::find_program_address(&self.restaking_program_id).0)
+            .ncn(ncn)
+            .vault(vault)
+            .slasher(slasher)
+            .ncn_vault_ticket(ncn_vault_ticket)
+            .ncn_vault_slasher_ticket(ncn_vault_slasher_ticket)
+            .admin(keypair.pubkey())
+            .payer(keypair.pubkey())
+            .args(100);
+
+        let blockhash = rpc_client.get_latest_blockhash().await?;
+        let tx = Transaction::new_signed_with_payer(
+            &[ix_builder.instruction()],
+            Some(&keypair.pubkey()),
+            &[keypair],
+            blockhash,
+        );
+
+        info!(
+            "Initializing ncn vault slasher ticket transaction: {:?}",
+            tx.get_signature()
+        );
+        let result = rpc_client.send_and_confirm_transaction(&tx).await?;
+        info!("Transaction confirmed: {:?}", result);
+
+        info!("\nCreated Ncn Vault Slasher Ticket");
+        info!("Ncn address: {}", ncn);
+        info!("Vault address: {}", vault);
+        info!("Slasher address: {}", slasher);
+        info!(
+            "Ncn Vault Slasher Ticket address: {}",
+            ncn_vault_slasher_ticket
+        );
+
         Ok(())
     }
 }
