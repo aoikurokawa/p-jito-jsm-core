@@ -33,7 +33,9 @@ pub struct ListVaultNcnSlasherOperatorTicket {
     restaking_program_id: Pubkey,
 }
 
-pub async fn command_list_vault_ncn_slasher_operator_ticket(args: ListVaultNcnSlasherOperatorTicket) {
+pub async fn command_list_vault_ncn_slasher_operator_ticket(
+    args: ListVaultNcnSlasherOperatorTicket,
+) {
     let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = VaultHandler::new(
         &args.rpc_url,
