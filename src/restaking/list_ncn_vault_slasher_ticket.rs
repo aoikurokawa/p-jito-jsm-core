@@ -1,13 +1,14 @@
 use std::path::PathBuf;
 
 use clap::Parser;
+use jito_restaking_core::ncn_vault_slasher_ticket::NcnVaultSlasherTicket;
 use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 
 use super::RestakingHandler;
 
 #[derive(Parser)]
-#[command(about = "Warmup Operator Vault Ticket account")]
-pub struct WarmupOperatorVaultTicket {
+#[command(about = "List Ncn Vault Slasher Ticket account")]
+pub struct ListNcnVaultSlasherTicket {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]
     rpc_url: String,
@@ -16,27 +17,18 @@ pub struct WarmupOperatorVaultTicket {
     #[arg(long, env, default_value = "~/.config/solana/id.json")]
     keypair: PathBuf,
 
-    /// Validator history program ID (Pubkey as base58 string)
+    /// Restaking program ID (Pubkey as base58 string)
     #[arg(
         long,
         env,
-        default_value = "5b2dHDz9DLhXnwQDG612bgtBGJD62Riw9s9eYuDT3Zma"
+        default_value = "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q"
     )]
     restaking_program_id: Pubkey,
-
-    /// operator pubkey
-    #[arg(long)]
-    operator: Pubkey,
-
-    /// Vault Pubkey
-    #[arg(long)]
-    vault: Pubkey,
 }
 
-pub async fn command_warmup_operator_vault_ticket(args: WarmupOperatorVaultTicket) {
+pub async fn command_list_ncn_vault_slasher_ticket(args: ListNcnVaultSlasherTicket) {
     let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = RestakingHandler::new(&args.rpc_url, &payer, args.restaking_program_id);
-    handler
-        .warmup_operator_vault_ticket(args.operator, args.vault)
-        .await;
+
+    handler.list_account::<NcnVaultSlasherTicket>().await;
 }

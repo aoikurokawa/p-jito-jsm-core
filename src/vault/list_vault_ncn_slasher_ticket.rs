@@ -3,11 +3,11 @@ use std::path::PathBuf;
 use clap::Parser;
 use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 
-use super::RestakingHandler;
+use super::VaultHandler;
 
 #[derive(Parser)]
-#[command(about = "Initialize Restaking config account")]
-pub struct InitRestakingConfig {
+#[command(about = "Initialize Vault account")]
+pub struct ListVaultNcnSlasherTicket {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]
     rpc_url: String,
@@ -20,21 +20,27 @@ pub struct InitRestakingConfig {
     #[arg(
         long,
         env,
-        default_value = "BLCDL7LqxaYWxSEkayc4VYjs3iCNJJw8SQzsvEL2uVT"
+        default_value = "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8"
     )]
     vault_program_id: Pubkey,
 
-    /// Validator history program ID (Pubkey as base58 string)
+    /// Vault program ID (Pubkey as base58 string)
     #[arg(
         long,
         env,
-        default_value = "5b2dHDz9DLhXnwQDG612bgtBGJD62Riw9s9eYuDT3Zma"
+        default_value = "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q"
     )]
     restaking_program_id: Pubkey,
 }
 
-pub async fn command_init_restaking_config(args: InitRestakingConfig) {
+pub async fn command_list_vault_ncn_slasher_ticket(args: ListVaultNcnSlasherTicket) {
     let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
-    let handler = RestakingHandler::new(&args.rpc_url, &payer, args.restaking_program_id);
-    handler.initialize_config(args.vault_program_id).await;
+    let handler = VaultHandler::new(
+        &args.rpc_url,
+        &payer,
+        args.vault_program_id,
+        args.restaking_program_id,
+    );
+
+    handler.list_vault_ncn_slasher_ticket().await;
 }

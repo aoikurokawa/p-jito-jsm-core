@@ -1,13 +1,14 @@
 use std::path::PathBuf;
 
 use clap::Parser;
+use jito_vault_core::vault_operator_delegation::VaultOperatorDelegation;
 use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 
 use super::VaultHandler;
 
 #[derive(Parser)]
-#[command(about = "Warmup Vault NCN Ticket account")]
-pub struct WarmupVaultNcnTicket {
+#[command(about = "Fetch Vault Operator Delegation account")]
+pub struct ListVaultOperatorDelegation {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]
     rpc_url: String,
@@ -20,28 +21,20 @@ pub struct WarmupVaultNcnTicket {
     #[arg(
         long,
         env,
-        default_value = "BLCDL7LqxaYWxSEkayc4VYjs3iCNJJw8SQzsvEL2uVT"
+        default_value = "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8"
     )]
     vault_program_id: Pubkey,
 
-    /// Vault program ID (Pubkey as base58 string)
+    /// Restaking program ID (Pubkey as base58 string)
     #[arg(
         long,
         env,
-        default_value = "78J8YzXGGNynLRpn85MH77PVLBZsWyLCHZAXRvKaB6Ng"
+        default_value = "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q"
     )]
     restaking_program_id: Pubkey,
-
-    /// Vault pubkey
-    #[arg(long)]
-    vault: Pubkey,
-
-    /// NCN Pubkey
-    #[arg(long)]
-    ncn: Pubkey,
 }
 
-pub async fn command_warmup_vault_ncn_ticket(args: WarmupVaultNcnTicket) {
+pub async fn command_list_vault_operator_delegation(args: ListVaultOperatorDelegation) {
     let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = VaultHandler::new(
         &args.rpc_url,
@@ -50,5 +43,5 @@ pub async fn command_warmup_vault_ncn_ticket(args: WarmupVaultNcnTicket) {
         args.restaking_program_id,
     );
 
-    handler.warmup_vault_ncn_ticket(args.vault, args.ncn).await;
+    handler.list_accounts::<VaultOperatorDelegation>().await
 }

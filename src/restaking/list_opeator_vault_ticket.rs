@@ -6,8 +6,8 @@ use solana_sdk::{pubkey::Pubkey, signature::read_keypair_file};
 use super::RestakingHandler;
 
 #[derive(Parser)]
-#[command(about = "Warmup NCN Vault Ticket account")]
-pub struct ListNcnVaultTicket {
+#[command(about = "Warmup Operator Vault Ticket account")]
+pub struct ListOperatorVaultTicket {
     /// RPC URL for the cluster
     #[arg(short, long, env, default_value = "https://api.devnet.solana.com")]
     rpc_url: String,
@@ -25,8 +25,8 @@ pub struct ListNcnVaultTicket {
     restaking_program_id: Pubkey,
 }
 
-pub async fn command_list_ncn_vault_ticket(args: ListNcnVaultTicket) {
+pub async fn command_list_operator_vault_ticket(args: ListOperatorVaultTicket) {
     let payer = read_keypair_file(args.keypair).expect("Failed to read keypair file");
     let handler = RestakingHandler::new(&args.rpc_url, &payer, args.restaking_program_id);
-    handler.list_ncn_vault_ticket().await;
+    handler.list_operator_vault_ticket().await;
 }
