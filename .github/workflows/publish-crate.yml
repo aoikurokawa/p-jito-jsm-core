@@ -40,7 +40,7 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.REPO_PAT }}
           fetch-depth: 0 # get the whole history for changelog
 
       - name: Setup Rust
@@ -100,7 +100,7 @@ jobs:
         id: changelog
         uses: metcalfc/changelog-generator@v4.1.0
         with:
-          myToken: ${{ secrets.PAT }}
+          myToken: ${{ secrets.REPO_PAT }}
           includePattern: ".*/${{ inputs.package_path }}/.*"
 
       - name: Create GitHub release
