@@ -51,7 +51,7 @@ jobs:
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
         with:
-          key: "p-jito-jsm-core-publish-${{ inputs.package_path }}"
+          key: "p-jsm-core-publish-${{ inputs.package_path }}"
 
       - name: Install Cargo Release
         uses: baptiste0928/cargo-install@v3
