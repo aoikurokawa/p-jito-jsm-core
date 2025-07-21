@@ -30,6 +30,7 @@ on:
         type: boolean
         default: true
 
+jobs:
   publish:
     name: Publish Crate
     runs-on: ubuntu-latest
