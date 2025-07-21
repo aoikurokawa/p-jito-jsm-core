@@ -48,6 +48,8 @@ pub fn load_system_program(info: &AccountInfo) -> Result<(), ProgramError> {
 ///
 /// # Returns
 /// * `Result<(), ProgramError>` - The result of the operation
+///
+/// # Safety
 pub unsafe fn load_system_account(
     info: &AccountInfo,
     is_writable: bool,
