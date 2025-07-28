@@ -72,7 +72,7 @@ pub fn create_account(
 }
 
 /// Closes the program account
-/// 
+///
 /// # Safety
 pub unsafe fn close_program_account(
     program_id: &Pubkey,
