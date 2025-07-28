@@ -34,10 +34,10 @@ pub fn create_account(
             from: payer,
             to: new_account,
             lamports: rent.minimum_balance(space as usize),
-            space: space as u64,
+            space,
             owner: program_owner,
         }
-        .invoke_signed(&signers)
+        .invoke_signed(signers)
     } else {
         // someone can transfer lamports to accounts before they're initialized
         // in that case, creating the account won't work.
@@ -72,6 +72,8 @@ pub fn create_account(
 }
 
 /// Closes the program account
+/// 
+/// # Safety
 pub unsafe fn close_program_account(
     program_id: &Pubkey,
     account_to_close: &AccountInfo,
