@@ -1,4 +1,8 @@
-use pinocchio::{account_info::AccountInfo, ProgramResult};
+use pinocchio::{
+    account_info::AccountInfo, instruction::Signer, program_error::ProgramError, pubkey::Pubkey,
+    sysvars::rent::Rent, ProgramResult,
+};
+use pinocchio_system::instructions::{Allocate, Assign, CreateAccount, Transfer};
 
 pub mod loader;
 
@@ -14,33 +18,26 @@ pub mod loader;
 /// # Returns
 /// * `ProgramResult` - The result of the operation
 #[inline(always)]
-pub fn create_account<'a, 'info>(
-    payer: &'a AccountInfo<'info>,
-    new_account: &'a AccountInfo<'info>,
-    system_program: &'a AccountInfo<'info>,
+pub fn create_account(
+    payer: &AccountInfo,
+    new_account: &AccountInfo,
+    _system_program: &AccountInfo,
     program_owner: &Pubkey,
     rent: &Rent,
     space: u64,
-    seeds: &[Vec<u8>],
+    signers: &[Signer],
 ) -> ProgramResult {
-    let current_lamports = **new_account.try_borrow_lamports()?;
+    let current_lamports = *new_account.try_borrow_lamports()?;
     if current_lamports == 0 {
         // If there are no lamports in the new account, we create it with the create_account instruction
-        invoke_signed(
-            &system_instruction::create_account(
-                payer.key,
-                new_account.key,
-                rent.minimum_balance(space as usize),
-                space,
-                program_owner,
-            ),
-            &[payer.clone(), new_account.clone(), system_program.clone()],
-            &[seeds
-                .iter()
-                .map(|seed| seed.as_slice())
-                .collect::<Vec<&[u8]>>()
-                .as_slice()],
-        )
+        CreateAccount {
+            from: payer,
+            to: new_account,
+            lamports: rent.minimum_balance(space as usize),
+            space: space as u64,
+            owner: program_owner,
+        }
+        .invoke_signed(&signers)
     } else {
         // someone can transfer lamports to accounts before they're initialized
         // in that case, creating the account won't work.
@@ -51,78 +48,69 @@ pub fn create_account<'a, 'info>(
             .max(1)
             .saturating_sub(current_lamports);
         if required_lamports > 0 {
-            invoke(
-                &system_instruction::transfer(payer.key, new_account.key, required_lamports),
-                &[payer.clone(), new_account.clone(), system_program.clone()],
-            )?;
+            Transfer {
+                from: payer,
+                to: new_account,
+                lamports: required_lamports,
+            }
+            .invoke()?;
         }
         // Allocate space.
-        invoke_signed(
-            &system_instruction::allocate(new_account.key, space),
-            &[new_account.clone(), system_program.clone()],
-            &[seeds
-                .iter()
-                .map(|seed| seed.as_slice())
-                .collect::<Vec<&[u8]>>()
-                .as_slice()],
-        )?;
+        Allocate {
+            account: new_account,
+            space,
+        }
+        .invoke_signed(signers)?;
+
         // Assign to the specified program
-        invoke_signed(
-            &system_instruction::assign(new_account.key, program_owner),
-            &[new_account.clone(), system_program.clone()],
-            &[seeds
-                .iter()
-                .map(|seed| seed.as_slice())
-                .collect::<Vec<&[u8]>>()
-                .as_slice()],
-        )
+        Assign {
+            account: new_account,
+            owner: program_owner,
+        }
+        .invoke_signed(signers)
     }
 }
 
 /// Closes the program account
-pub fn close_program_account<'a>(
+pub unsafe fn close_program_account(
     program_id: &Pubkey,
-    account_to_close: &AccountInfo<'a>,
-    destination_account: &AccountInfo<'a>,
+    account_to_close: &AccountInfo,
+    destination_account: &AccountInfo,
 ) -> ProgramResult {
     // Check if the account is owned by the program
-    if account_to_close.owner != program_id {
+    if account_to_close.owner() != program_id {
         return Err(ProgramError::IllegalOwner);
     }
 
-    **destination_account.lamports.borrow_mut() = destination_account
+    let lamports = destination_account.borrow_mut_lamports_unchecked();
+    *lamports = destination_account
         .lamports()
         .checked_add(account_to_close.lamports())
         .ok_or(ProgramError::ArithmeticOverflow)?;
-    **account_to_close.lamports.borrow_mut() = 0;
 
-    account_to_close.assign(&solana_program::system_program::id());
+    *account_to_close.borrow_mut_lamports_unchecked() = 0;
+
+    account_to_close.assign(&pinocchio_system::id());
     account_to_close.realloc(0, false)?;
 
     Ok(())
 }
 
-pub fn realloc<'a, 'info>(
-    account: &'a AccountInfo<'info>,
+pub fn realloc(
+    account: &AccountInfo,
     new_size: usize,
-    payer: &'a AccountInfo<'info>,
+    payer: &AccountInfo,
     rent: &Rent,
 ) -> ProgramResult {
     let new_minimum_balance = rent.minimum_balance(new_size);
 
     let lamports_diff = new_minimum_balance.saturating_sub(account.lamports());
-    invoke(
-        &system_instruction::transfer(payer.key, account.key, lamports_diff),
-        &[payer.clone(), account.clone()],
-    )?;
+    Transfer {
+        from: payer,
+        to: account,
+        lamports: lamports_diff,
+    }
+    .invoke()?;
     account.realloc(new_size, false)?;
     Ok(())
-}
-
-pub fn get_epoch(slot: u64, epoch_length: u64) -> Result<u64, CoreError> {
-    let epoch = slot
-        .checked_div(epoch_length)
-        .ok_or(CoreError::BadEpochLength)?;
-
-    Ok(epoch)
 }
